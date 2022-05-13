@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os/exec"
+	"spotify-tray/icon"
 	"strconv"
 	"strings"
 	"time"
@@ -33,7 +34,7 @@ type SpotifyStatus struct {
 }
 
 func (s *SpotifyStatus) Format() string {
-	return fmt.Sprintf("%d%% %s  %s - %s", s.progress, s.status, trimString(s.artist, 64), trimString(s.track, 64))
+	return fmt.Sprintf(" %d%% %s  %s - %s", s.progress, s.status, trimString(s.artist, 64), trimString(s.track, 64))
 }
 
 func trimString(s string, maxLength int) string {
@@ -98,7 +99,8 @@ func fetchSpotifyStatus() SpotifyStatus {
 }
 
 func onReady() {
-	systray.SetTitle("Loading...")
+	systray.SetTemplateIcon(icon.Data, icon.Data)
+	systray.SetTitle(" Loading...")
 	mLyrics := systray.AddMenuItem("Lyrics", "Search lyrics")
 	mQuitOrig := systray.AddMenuItem("Quit", "Quit the whole app")
 
