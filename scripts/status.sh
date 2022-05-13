@@ -8,7 +8,7 @@ paused_icon=""
 stopped_icon=""
 
 playing_default="▶︎"
-paused_default="■"
+paused_default="❚❚"
 
 music_status() {
 read -r -d '' SCRIPT <<END
