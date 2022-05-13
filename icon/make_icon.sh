@@ -7,7 +7,7 @@ fi
 
 if [ ! -e "$GOPATH/bin/2goarray" ]; then
     echo "Installing 2goarray..."
-    go get github.com/cratonica/2goarray
+    go install github.com/cratonica/2goarray
     if [ $? -ne 0 ]; then
         echo Failure executing go get github.com/cratonica/2goarray
         exit
