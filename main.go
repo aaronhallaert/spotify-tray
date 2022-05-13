@@ -72,13 +72,15 @@ func onReady() {
 	mQuitOrig := systray.AddMenuItem("Quit", "Quit the whole app")
 
     systray.AddSeparator()
+    go func() {
+        <-mQuitOrig.ClickedCh
+        fmt.Println("Requesting quit")
+        systray.Quit()
+        fmt.Println("Finished quitting")
+    }()
 
 	go func() {
         select {
-        case <-mQuitOrig.ClickedCh:
-            fmt.Println("Requesting quit")
-            systray.Quit()
-            fmt.Println("Finished quitting")
         case <-mUrl.ClickedCh:
             open.Run("https://www.spotify.com")
             return
@@ -93,11 +95,5 @@ func onReady() {
             systray.SetTitle(title)
             time.Sleep(time.Millisecond * 300)
         }
-	}()
-
-
-	// We can manipulate the systray in other goroutines
-	go func() {
-		systray.SetTooltip("")
 	}()
 }
