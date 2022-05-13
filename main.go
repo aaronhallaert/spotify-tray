@@ -5,6 +5,7 @@ import (
 	"os/exec"
 	"strings"
 	"time"
+    "strconv"
 
 	"github.com/getlantern/systray"
 	"github.com/skratchdot/open-golang/open"
@@ -25,11 +26,14 @@ type SpotifyStatus struct {
     artist string
     album string
     status string
+    duration float64
+    position float64
+    progress int
 }
 
 func (s *SpotifyStatus) Format() string {
     // return fmt.Sprintf("%s - %s", s.status, s.track)
-    return fmt.Sprintf("%s  %s - %s", s.status, s.track, s.artist)
+    return fmt.Sprintf("%d%% %s  %s - %s", s.progress, s.status, s.track, s.artist)
 }
 
 
@@ -58,11 +62,32 @@ func fetchSpotifyStatus() SpotifyStatus {
     }
     album := strings.TrimSuffix(string(nAlbum), "\n")
 
+    nDuration, err := exec.Command("/bin/sh", scriptsPath+"duration.sh").Output()
+    if err != nil {
+        fmt.Printf("error %s", err)
+    }
+    duration := strings.TrimSuffix(string(nDuration), "\n")
+    durationFloat, err := strconv.ParseFloat(duration, 64)
+    durationFloat = durationFloat / 1000
+
+
+    nPosition, err := exec.Command("/bin/sh", scriptsPath+"position.sh").Output()
+    if err != nil {
+        fmt.Printf("error %s", err)
+    }
+    position := strings.TrimSuffix(string(nPosition), "\n")
+    position = strings.ReplaceAll(position, ",", ".")
+    positionFloat, err := strconv.ParseFloat(position, 64)
+    progress := int((positionFloat / durationFloat) * 100)
+
     return SpotifyStatus {
         track: track,
         artist: artist,
         album: album,
         status: status,
+        duration: durationFloat,
+        position: positionFloat,
+        progress: progress,
     }
 }
 
