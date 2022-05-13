@@ -32,7 +32,7 @@ type SpotifyStatus struct {
 }
 
 func (s *SpotifyStatus) Format() string {
-    return fmt.Sprintf("%d%% %s  %s - %s", s.progress, s.status, trimString(s.track, 20), trimString(s.artist, 20))
+    return fmt.Sprintf("%d%% %s  %s - %s", s.progress, s.status, trimString(s.artist, 20), trimString(s.track, 20))
 }
 
 func trimString(s string, maxLength int) string {
