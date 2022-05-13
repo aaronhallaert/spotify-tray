@@ -32,10 +32,16 @@ type SpotifyStatus struct {
 }
 
 func (s *SpotifyStatus) Format() string {
-    // return fmt.Sprintf("%s - %s", s.status, s.track)
-    return fmt.Sprintf("%d%% %s  %s - %s", s.progress, s.status, s.track, s.artist)
+    return fmt.Sprintf("%d%% %s  %s - %s", s.progress, s.status, trimString(s.track, 20), trimString(s.artist, 20))
 }
 
+func trimString(s string, maxLength int) string {
+    if len(s) > maxLength {
+        trimmed := s[:maxLength] + "..."
+        return trimmed
+    }
+    return s
+}
 
 func fetchSpotifyStatus() SpotifyStatus { 
     nTrack, err := exec.Command("/bin/sh", scriptsPath+"track.sh").Output()
@@ -93,8 +99,10 @@ func fetchSpotifyStatus() SpotifyStatus {
 
 func onReady() {
 	systray.SetTitle("Loading...")
-    mUrl := systray.AddMenuItem("Spotify", "my home")
+    mLyrics := systray.AddMenuItem("Lyrics", "Search lyrics")
 	mQuitOrig := systray.AddMenuItem("Quit", "Quit the whole app")
+
+    currentSpotifyStatus := fetchSpotifyStatus()
 
     systray.AddSeparator()
     go func() {
@@ -106,18 +114,17 @@ func onReady() {
 
 	go func() {
         select {
-        case <-mUrl.ClickedCh:
-            open.Run("https://www.spotify.com")
+        case <-mLyrics.ClickedCh:
+            open.Run("https://www.google.be/search?q=" + currentSpotifyStatus.track + " lyrics")
             return
-
         }
 	}()
 
 	go func() {
         for {
-            newSpotifyStatus := fetchSpotifyStatus()
-            title := newSpotifyStatus.Format()
-            systray.SetTitle(title)
+            currentSpotifyStatus = fetchSpotifyStatus()
+            message := currentSpotifyStatus.Format()
+            systray.SetTitle(message)
             time.Sleep(time.Millisecond * 300)
         }
 	}()
