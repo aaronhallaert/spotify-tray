@@ -30,16 +30,31 @@ type SpotifyStatus struct {
 	progress int
 }
 
-func (s *SpotifyStatus) Format() string {
+func (s *SpotifyStatus) Format(showProgress bool, isArtistFirst bool, isMoreSpace bool) string {
 	if len(s.track) == 0 {
-		return fmt.Sprintf("%s  Spotify is not running!", s.status)
+		return fmt.Sprintf("%s  Spotify is not playing!", s.status)
+	}
+
+	formatProgres := fmt.Sprintf("  |  %d%%", s.progress)
+	if !showProgress {
+		formatProgres = ""
+	}
+
+	formatStrLength := 64
+	if !isMoreSpace {
+		formatStrLength = 20
 	}
 
 	if len(s.artist) == 0 {
-		return fmt.Sprintf("%s  %s  |  %d%%", s.status, trimString(s.track, 64), s.progress)
+		return fmt.Sprintf("%s  %s%s", s.status, trimString(s.track, formatStrLength), formatProgres)
 	}
 
-	return fmt.Sprintf("%s  %s - %s  |  %d%%", s.status, trimString(s.artist, 64), trimString(s.track, 64), s.progress)
+	artistAndTrack := [2]string{trimString(s.artist, formatStrLength), trimString(s.track, formatStrLength)}
+	if !isArtistFirst {
+		artistAndTrack = [2]string{trimString(s.track, formatStrLength), trimString(s.artist, formatStrLength)}
+	}
+
+	return fmt.Sprintf("%s  %s - %s%s", s.status, artistAndTrack[0], artistAndTrack[1], formatProgres)
 }
 
 func trimString(s string, maxLength int) string {
@@ -113,6 +128,10 @@ func onReady() {
 	systray.SetTitle("Loading...")
 	mLyrics := systray.AddMenuItem("Lyrics", "Search lyrics")
 	systray.AddSeparator()
+	mProgress := systray.AddMenuItemCheckbox("Show progress?", "Show Progress", true)
+	mArtistFirst := systray.AddMenuItemCheckbox("Show artist first?", "Show artist first", true)
+	mMoreSpace := systray.AddMenuItemCheckbox("Use more space?", "Use more space", true)
+	systray.AddSeparator()
 	mQuitOrig := systray.AddMenuItem("Quit", "Quit the whole app")
 
 	currentSpotifyStatus := fetchSpotifyStatus()
@@ -131,8 +150,35 @@ func onReady() {
 
 	go func() {
 		for {
+			select {
+			case <-mProgress.ClickedCh:
+				if mProgress.Checked() {
+					mProgress.Uncheck()
+				} else {
+					mProgress.Check()
+				}
+
+			case <-mArtistFirst.ClickedCh:
+				if mArtistFirst.Checked() {
+					mArtistFirst.Uncheck()
+				} else {
+					mArtistFirst.Check()
+				}
+
+			case <-mMoreSpace.ClickedCh:
+				if mMoreSpace.Checked() {
+					mMoreSpace.Uncheck()
+				} else {
+					mMoreSpace.Check()
+				}
+			}
+		}
+	}()
+
+	go func() {
+		for {
 			currentSpotifyStatus = fetchSpotifyStatus()
-			message := currentSpotifyStatus.Format()
+			message := currentSpotifyStatus.Format(mProgress.Checked(), mArtistFirst.Checked(), mMoreSpace.Checked())
 			systray.SetTitle(message)
 			time.Sleep(time.Millisecond * 300)
 		}
