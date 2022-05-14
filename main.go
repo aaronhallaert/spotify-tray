@@ -11,7 +11,7 @@ import (
 	"github.com/skratchdot/open-golang/open"
 )
 
-var scriptsPath = "./scripts/"
+var scriptsPath = "../Resources/"
 
 func main() {
 	onExit := func() {
@@ -104,7 +104,7 @@ func fetchSpotifyStatus() SpotifyStatus {
 }
 
 func onReady() {
-	systray.SetTitle(" Loading...")
+	systray.SetTitle("Loading...")
 	mLyrics := systray.AddMenuItem("Lyrics", "Search lyrics")
 	mQuitOrig := systray.AddMenuItem("Quit", "Quit the whole app")
 
