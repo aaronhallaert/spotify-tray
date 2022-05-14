@@ -126,7 +126,7 @@ func fetchSpotifyStatus() SpotifyStatus {
 
 func onReady() {
 	systray.SetTitle("Loading...")
-	mLyrics := systray.AddMenuItem("Lyrics", "Search lyrics")
+	mLyrics := systray.AddMenuItem("Lyrics", "Search for lyrics online")
 	systray.AddSeparator()
 	mProgress := systray.AddMenuItemCheckbox("Show progress?", "Show Progress", true)
 	mArtistFirst := systray.AddMenuItemCheckbox("Show artist first?", "Show artist first", true)
@@ -145,7 +145,7 @@ func onReady() {
 
 	go func() {
 		<-mLyrics.ClickedCh
-		open.Run("https://www.google.be/search?q=" + currentSpotifyStatus.track + " lyrics")
+		open.Run("https://www.google.be/search?q=" + currentSpotifyStatus.track + "-" + currentSpotifyStatus.artist + " lyrics")
 	}()
 
 	go func() {
