@@ -11,6 +11,7 @@ bundle: build
 		-icon ./config/appicon1024.png \
 		-identifier com.spotify-tray \
 		-name "Spotify Tray" \
+		-dmg ./config/template.dmg \
 		-o ./dist
 
 generate_icon: .

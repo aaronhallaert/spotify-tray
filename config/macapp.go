@@ -17,24 +17,7 @@
 //		-name "My App"
 //		-dmg "My App template.dmg" \
 //		-o ~/Desktop
-//
-// You may use this whole program or bits and pieces for whatever you want,
-// but it comes without warranty or support -- I have no idea what I'm doing,
-// as it is, so don't ask me. Sorry. But feel free to learn from it; it's a
-// pretty minimal automation of the whole process for simple, single-binary
-// applications that aren't native Cocoa, and I think I would have found
-// this helpful to have when I was trying to figure it out.
-//
-// NOTE: This program *very likely has obvious bugs*. Feel free to suggest
-// improvements to this gist and comment below, but I don't make any
-// guarantees; it worked for me and you're on your own beyond that.
-//
-// I learned from these pages/posts - thanks, whomever you may be:
-// - https://developer.apple.com/library/content/documentation/Porting/Conceptual/PortingUnix/distributing/distibuting.html#//apple_ref/doc/uid/TP40002855-TPXREF101
-// - https://github.com/Xeoncross/macappshell
-// - https://el-tramo.be/blog/fancy-dmg/
-// - https://github.com/remko/fancy-dmg/blob/master/Makefile
-// - https://github.com/shurcooL/trayhost
+
 package main
 
 import (
@@ -77,6 +60,10 @@ func main() {
 		flag.PrintDefaults()
 		return
 	}
+
+	// clean outputDir first
+	os.RemoveAll(outputDir)
+	os.Mkdir(outputDir, 0755)
 
 	// make and fill out the .app bundle
 	appName = strings.TrimSuffix(appName, ".app")
@@ -248,7 +235,7 @@ func makeAppIcons(appFolder string) error {
 }
 
 func makeDMGFromTemplate(templateDMG, appBundleName string) error {
-	tmpDir := "./tmp"
+	tmpDir := "./tmpDir"
 	err := os.Mkdir(tmpDir, 0755)
 	if err != nil {
 		return fmt.Errorf("making temporary directory: %v", err)

@@ -109,6 +109,7 @@ func fetchSpotifyStatus() SpotifyStatus {
 func onReady() {
 	systray.SetTitle("Loading...")
 	mLyrics := systray.AddMenuItem("Lyrics", "Search lyrics")
+	systray.AddSeparator()
 	mQuitOrig := systray.AddMenuItem("Quit", "Quit the whole app")
 
 	currentSpotifyStatus := fetchSpotifyStatus()
