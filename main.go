@@ -38,6 +38,10 @@ func (s *SpotifyStatus) Format() string {
 		return " Spotify is not running!"
 	}
 
+	if len(s.artist) == 0 {
+		return fmt.Sprintf(" %d%% %s  %s", s.progress, s.status, trimString(s.track, 64))
+	}
+
 	return fmt.Sprintf(" %d%% %s  %s - %s", s.progress, s.status, trimString(s.artist, 64), trimString(s.track, 64))
 }
 
