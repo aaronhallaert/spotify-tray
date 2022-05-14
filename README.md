@@ -11,13 +11,17 @@ This application fetches spotify status with osascript from the Spotify Desktop 
 ## How to use
 
 - Install go on your machine (`brew install go`)
-- Build with `go build`
+
+### CLI
+
+- Build with `make build`
 - Execute with `./spotify-tray`
 
-## Status
+### App
 
-- [ ] Package in an MacOS application
+- Build with `make bundle`
+- Open the `Spotify Tray.dmg` that was created in the `dist` folder
 
-  - workaround possible with `Automator`:
+### Generate icon
 
-    `cd ${project_folder} && ${project_folder}/spotify-tray`
+You can generate a custom tray icon with `make generate_icon 'path-to-file'` or you can generate the default icon with `make generate_icon_default`.
