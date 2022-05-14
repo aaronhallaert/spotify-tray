@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"os/exec"
-	"spotify-tray/icon"
+	"spotify-tray/icons/icon"
 	"strconv"
 	"strings"
 	"time"
@@ -37,6 +37,7 @@ func (s *SpotifyStatus) Format() string {
 	if len(s.track) == 0 {
 		return " Spotify is not running!"
 	}
+
 	return fmt.Sprintf(" %d%% %s  %s - %s", s.progress, s.status, trimString(s.artist, 64), trimString(s.track, 64))
 }
 
