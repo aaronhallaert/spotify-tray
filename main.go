@@ -34,7 +34,7 @@ type SpotifyStatus struct {
 
 func (s *SpotifyStatus) Format() string {
 	if len(s.track) == 0 {
-		return "Spotify is not running!"
+		return fmt.Sprintf("%s  Spotify is not running!", s.status)
 	}
 
 	if len(s.artist) == 0 {
