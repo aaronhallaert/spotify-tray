@@ -13,8 +13,6 @@ import (
 
 var scriptsPath = "./scripts/"
 
-// var scriptsPath = "../Resources/"
-
 func main() {
 	onExit := func() {
 	}

@@ -24,14 +24,12 @@ if [ ! -f "$1" ]; then
     exit
 fi
 
-NAME="$(basename $1 .png)"
-mkdir $NAME
-OUTPUT=./$NAME/iconunix.go
+OUTPUT=iconunix.go
 
 echo Generating $OUTPUT
 echo "//+build linux darwin" > $OUTPUT
 echo >> $OUTPUT
-cat "$1" | $GOPATH/bin/2goarray Data "$NAME" >> $OUTPUT
+cat "$1" | $GOPATH/bin/2goarray Data icon >> $OUTPUT
 
 if [ $? -ne 0 ]; then
     echo Failure generating $OUTPUT
