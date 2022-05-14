@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"spotify-tray/storage"
 	"strconv"
 	"strings"
 	"time"
@@ -17,6 +18,7 @@ func main() {
 	onExit := func() {
 	}
 
+	storage.Init()
 	systray.Run(onReady, onExit)
 }
 
@@ -128,9 +130,9 @@ func onReady() {
 	systray.SetTitle("Loading...")
 	mLyrics := systray.AddMenuItem("Lyrics", "Search for lyrics online")
 	systray.AddSeparator()
-	mProgress := systray.AddMenuItemCheckbox("Show progress?", "Show Progress", true)
-	mArtistFirst := systray.AddMenuItemCheckbox("Show artist first?", "Show artist first", true)
-	mMoreSpace := systray.AddMenuItemCheckbox("Use more space?", "Use more space", true)
+	mProgress := systray.AddMenuItemCheckbox("Show progress?", "Show Progress", storage.GetHasProgress())
+	mArtistFirst := systray.AddMenuItemCheckbox("Show artist first?", "Show artist first", storage.GetArtistFirst())
+	mMoreSpace := systray.AddMenuItemCheckbox("Use more space?", "Use more space", storage.GetMoreSpace())
 	systray.AddSeparator()
 	mQuitOrig := systray.AddMenuItem("Quit", "Quit the whole app")
 
@@ -154,22 +156,28 @@ func onReady() {
 			case <-mProgress.ClickedCh:
 				if mProgress.Checked() {
 					mProgress.Uncheck()
+					storage.SetHasProgress(false)
 				} else {
 					mProgress.Check()
+					storage.SetHasProgress(true)
 				}
 
 			case <-mArtistFirst.ClickedCh:
 				if mArtistFirst.Checked() {
 					mArtistFirst.Uncheck()
+					storage.SetArtistFirst(false)
 				} else {
 					mArtistFirst.Check()
+					storage.SetArtistFirst(true)
 				}
 
 			case <-mMoreSpace.ClickedCh:
 				if mMoreSpace.Checked() {
 					mMoreSpace.Uncheck()
+					storage.SetMoreSpace(false)
 				} else {
 					mMoreSpace.Check()
+					storage.SetMoreSpace(true)
 				}
 			}
 		}
@@ -178,7 +186,7 @@ func onReady() {
 	go func() {
 		for {
 			currentSpotifyStatus = fetchSpotifyStatus()
-			message := currentSpotifyStatus.Format(mProgress.Checked(), mArtistFirst.Checked(), mMoreSpace.Checked())
+			message := currentSpotifyStatus.Format(storage.GetHasProgress(), storage.GetArtistFirst(), storage.GetMoreSpace())
 			systray.SetTitle(message)
 			time.Sleep(time.Millisecond * 300)
 		}
