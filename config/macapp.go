@@ -241,6 +241,9 @@ func makeAppIcons(appFolder string) error {
 		return fmt.Errorf("running iconutil: %v", err)
 	}
 
+	iconFilePath := filepath.Join(resFolder, iconFilename)
+	os.Remove(iconFilePath)
+
 	return nil
 }
 
