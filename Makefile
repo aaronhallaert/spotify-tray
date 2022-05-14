@@ -1,7 +1,8 @@
 # For a quick tutorial on `make` visit:
 # https://gist.github.com/isaacs/62a2d1825d04437c6f08
 
-build: go build -o scripts/spotify-tray main.go
+build: .
+	go build -o ./scripts/spotify-tray main.go
 
 bundle: build
 	go run ./config/macapp.go \
