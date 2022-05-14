@@ -24,7 +24,7 @@ if [ ! -f "$1" ]; then
     exit
 fi
 
-OUTPUT=iconunix.go
+OUTPUT=./icon/iconunix.go
 
 echo Generating $OUTPUT
 echo "//+build linux darwin" > $OUTPUT

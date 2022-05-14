@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -10,8 +12,6 @@ import (
 	"github.com/getlantern/systray"
 	"github.com/skratchdot/open-golang/open"
 )
-
-var scriptsPath = "../Resources/"
 
 func main() {
 	onExit := func() {
@@ -51,6 +51,9 @@ func trimString(s string, maxLength int) string {
 }
 
 func fetchSpotifyStatus() SpotifyStatus {
+	executable, _ := os.Executable()
+	scriptsPath := filepath.Join(filepath.Dir(executable), "../Resources/") + "/"
+
 	nTrack, err := exec.Command("/bin/sh", scriptsPath+"track.sh").Output()
 	if err != nil {
 		fmt.Printf("error %s", err)
@@ -110,7 +113,6 @@ func onReady() {
 
 	currentSpotifyStatus := fetchSpotifyStatus()
 
-	systray.AddSeparator()
 	go func() {
 		<-mQuitOrig.ClickedCh
 		fmt.Println("Requesting quit")
