@@ -53,6 +53,9 @@ func trimString(s string, maxLength int) string {
 func fetchSpotifyStatus() SpotifyStatus {
 	executable, _ := os.Executable()
 	scriptsPath := filepath.Join(filepath.Dir(executable), "../Resources/") + "/"
+	if !strings.Contains(filepath.Dir(executable), "MacOS") {
+		scriptsPath = filepath.Dir(executable) + "/"
+	}
 
 	nTrack, err := exec.Command("/bin/sh", scriptsPath+"track.sh").Output()
 	if err != nil {

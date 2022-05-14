@@ -1,7 +1,7 @@
 # For a quick tutorial on `make` visit:
 # https://gist.github.com/isaacs/62a2d1825d04437c6f08
 
-build: .
+build:
 	go build -o ./lib/spotify-tray main.go
 
 bundle: build
@@ -14,8 +14,8 @@ bundle: build
 		-dmg ./config/template.dmg \
 		-o ./dist
 
-generate_icon: .
+generate_icon:
 	./config/generate_icon.sh $(ARGS)
 
-generate_icon_default: .
+generate_icon_default:
 	./config/generate_icon.sh ./config/trayicon.png
