@@ -2,9 +2,7 @@ package spotifydata
 
 import (
 	"fmt"
-	"os"
 	"os/exec"
-	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -18,8 +16,6 @@ type Data struct {
 	Position float64
 	Progress int
 }
-
-var scriptsPath = getScriptsPath()
 
 func Init() *Data {
 	return getData()
@@ -38,12 +34,12 @@ func (d *Data) Update() {
 }
 
 func getData() *Data {
-	track := getValueFromScript("track.sh")
-	artist := getValueFromScript("artist.sh")
-	status := getValueFromScript("status.sh")
-	album := getValueFromScript("album.sh")
-	duration := getValueFromScript("duration.sh")
-	position := strings.ReplaceAll(getValueFromScript("position.sh"), ",", ".")
+	track := getValueFromScript("name of current track")
+	artist := getValueFromScript("artist of current track")
+	status := getValueFromScript("player state")
+	album := getValueFromScript("album of current track")
+	duration := getValueFromScript("duration of current track")
+	position := strings.ReplaceAll(getValueFromScript("player position"), ",", ".")
 
 	durationFloat, _ := strconv.ParseFloat(duration, 64)
 	durationFloat = durationFloat / 1000
@@ -96,21 +92,12 @@ func trimString(s string, maxLength int) string {
 	return s
 }
 
-func getValueFromScript(file string) string {
-	nValue, err := exec.Command("/bin/sh", scriptsPath+file).Output()
+func getValueFromScript(prop string) string {
+	nValue, err := exec.Command("osascript", "-e", "if application \"Spotify\" is running then\n tell application \"Spotify\"\n return "+prop+" as string \nend tell \nend if").Output()
+
 	if err != nil {
 		fmt.Printf("error %s", err)
 	}
 
 	return strings.TrimSuffix(string(nValue), "\n")
-}
-
-func getScriptsPath() string {
-	executable, _ := os.Executable()
-	path := filepath.Join(filepath.Dir(executable), "../Resources/") + "/"
-	if !strings.Contains(filepath.Dir(executable), "MacOS") {
-		path = filepath.Dir(executable) + "/scripts/"
-	}
-
-	return path
 }
