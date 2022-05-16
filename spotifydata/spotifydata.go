@@ -21,7 +21,7 @@ type Data struct {
 
 var scriptsPath = getScriptsPath()
 
-func Init() Data {
+func Init() *Data {
 	return getData()
 }
 
@@ -37,7 +37,7 @@ func (d *Data) Update() {
 	d.Progress = newStatus.Progress
 }
 
-func getData() Data {
+func getData() *Data {
 	track := getValueFromScript("track.sh")
 	artist := getValueFromScript("artist.sh")
 	status := getValueFromScript("status.sh")
@@ -50,7 +50,7 @@ func getData() Data {
 	positionFloat, _ := strconv.ParseFloat(position, 64)
 	progress := int((positionFloat / durationFloat) * 100)
 
-	return Data{
+	return &Data{
 		Track:    track,
 		Artist:   artist,
 		Album:    album,
