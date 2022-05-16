@@ -106,13 +106,6 @@ func onReady() {
 	currentSpotifyStatus := fetchSpotifyStatus()
 
 	go func() {
-		<-mQuitOrig.ClickedCh
-		fmt.Println("Requesting quit")
-		systray.Quit()
-		fmt.Println("Finished quitting")
-	}()
-
-	go func() {
 		<-mLyrics.ClickedCh
 		open.Run("https://www.google.be/search?q=" + currentSpotifyStatus.track + " - " + currentSpotifyStatus.artist + " lyrics")
 	}()
@@ -148,6 +141,11 @@ func onReady() {
 				}
 			}
 		}
+	}()
+
+	go func() {
+		<-mQuitOrig.ClickedCh
+		systray.Quit()
 	}()
 
 	go func() {
