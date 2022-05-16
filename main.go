@@ -86,7 +86,7 @@ func onReady() {
 		for {
 			currentSpotifyData.Update()
 			updateTray(currentSpotifyData)
-			time.Sleep(time.Millisecond * 300)
+			time.Sleep(time.Millisecond * 500)
 		}
 	}()
 }
