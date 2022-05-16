@@ -2,13 +2,12 @@
 # https://gist.github.com/isaacs/62a2d1825d04437c6f08
 
 build:
-	go build -o spotify-tray main.go
+	go build -o ./resources/spotify-tray main.go
 
 bundle: build
 	go run ./config/macapp.go \
-		-assets ./scripts/ \
+		-assets ./resources \
 		-bin spotify-tray \
-		-binFolder ../ \
 		-icon ./config/appicon1024.png \
 		-identifier com.spotify-tray \
 		-name "Spotify Tray" \

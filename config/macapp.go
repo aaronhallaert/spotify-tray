@@ -35,7 +35,6 @@ import (
 
 var (
 	assetsDir        string
-	binaryPath       string
 	binaryName       string
 	iconFile         string
 	appName          string
@@ -46,8 +45,7 @@ var (
 
 func init() {
 	flag.StringVar(&assetsDir, "assets", "", "The folder path that contains all the application assets")
-	flag.StringVar(&binaryPath, "binFolder", "", "The folder where the binary file is, relative to the assets folder")
-	flag.StringVar(&binaryName, "bin", "", "The name of the binary file")
+	flag.StringVar(&binaryName, "bin", "", "The name of the binary file, relative to the assets folder")
 	flag.StringVar(&iconFile, "icon", "", "The file of the icon to use for the application")
 	flag.StringVar(&appName, "name", "", "The user-facing name of the application")
 	flag.StringVar(&outputDir, "o", ".", "The folder into which to output the artefacts")
@@ -57,7 +55,7 @@ func init() {
 
 func main() {
 	flag.Parse()
-	if assetsDir == "" || iconFile == "" || binaryName == "" || appName == "" || binaryPath == "" {
+	if assetsDir == "" || iconFile == "" || binaryName == "" || appName == "" {
 		log.Println("[ERROR] Assets directory, binary name, icon file, and application name are required.")
 		flag.PrintDefaults()
 		return
@@ -113,7 +111,7 @@ func makeAppBundle(appFilename string) error {
 	}
 
 	// copy the binary into the bundle
-	binarySrc := filepath.Join(assetsDir, binaryPath, binaryName)
+	binarySrc := filepath.Join(assetsDir, binaryName)
 	binaryDest := filepath.Join(appFilename, "Contents", "MacOS", binaryName)
 	err = copyFile(binarySrc, binaryDest, nil)
 	if err != nil {
