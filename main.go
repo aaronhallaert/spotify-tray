@@ -147,7 +147,7 @@ func onReady() {
 
 	go func() {
 		<-mLyrics.ClickedCh
-		open.Run("https://www.google.be/search?q=" + currentSpotifyStatus.track + "-" + currentSpotifyStatus.artist + " lyrics")
+		open.Run("https://www.google.be/search?q=" + currentSpotifyStatus.track + " - " + currentSpotifyStatus.artist + " lyrics")
 	}()
 
 	go func() {
