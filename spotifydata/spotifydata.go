@@ -6,6 +6,7 @@ import (
 	"spotify-tray/icons"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 type Data struct {
@@ -81,27 +82,43 @@ func trimString(s string, maxLength int) string {
 }
 
 func getData() *Data {
-	track := getValueFromScript("name of current track")
-	artist := getValueFromScript("artist of current track")
-	status := getValueFromScript("player state")
-	album := getValueFromScript("album of current track")
-	duration := getValueFromScript("duration of current track")
-	position := strings.ReplaceAll(getValueFromScript("player position"), ",", ".")
+	data := &Data{}
+	var wg sync.WaitGroup
+	wg.Add(6)
 
-	durationFloat, _ := strconv.ParseFloat(duration, 64)
-	durationFloat = durationFloat / 1000
-	positionFloat, _ := strconv.ParseFloat(position, 64)
-	progress := int((positionFloat / durationFloat) * 100)
+	go func() {
+		defer wg.Done()
+		data.Track = getValueFromScript("name of current track")
+	}()
+	go func() {
+		defer wg.Done()
+		data.Artist = getValueFromScript("artist of current track")
+	}()
+	go func() {
+		defer wg.Done()
+		data.Album = getValueFromScript("album of current track")
+	}()
+	go func() {
+		defer wg.Done()
+		data.Status = getValueFromScript("player state")
+	}()
+	go func() {
+		defer wg.Done()
+		duration := getValueFromScript("duration of current track")
+		durationFloat, _ := strconv.ParseFloat(duration, 64)
+		data.Duration = durationFloat / 1000
+	}()
+	go func() {
+		defer wg.Done()
+		position := strings.ReplaceAll(getValueFromScript("player position"), ",", ".")
+		positionFloat, _ := strconv.ParseFloat(position, 64)
+		data.Position = positionFloat
+	}()
 
-	return &Data{
-		Track:    track,
-		Artist:   artist,
-		Album:    album,
-		Status:   status,
-		Duration: durationFloat,
-		Position: positionFloat,
-		Progress: progress,
-	}
+	wg.Wait()
+	data.Progress = int((data.Position / data.Duration) * 100)
+
+	return data
 }
 
 func getValueFromScript(prop string) string {
