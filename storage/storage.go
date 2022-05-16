@@ -2,10 +2,11 @@ package storage
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 type Preferences struct {
@@ -28,7 +29,6 @@ func Init() {
 	}
 
 	path = dirname + "/spotify-tray/preferences.json"
-	fmt.Println(path)
 	readOrWriteFileIfExist(path)
 }
 
@@ -66,11 +66,29 @@ func SetMoreSpace(value bool) {
 	writeFile()
 }
 
+func GetOpenAtLogin() bool {
+	entries, _ := exec.Command("osascript", "-e", "tell application \"System Events\" to get the name of every login item").Output()
+	return strings.Contains(string(entries), "Spotify Tray")
+}
+func SetOpenAtLogin(value bool) {
+	if value {
+		exec.Command("osascript", "-e", "tell application \"System Events\" to make login item at end with properties {name: \"Spotify Tray\",path:\""+getAppPath()+"\", hidden:false}").Run()
+	} else {
+		exec.Command("osascript", "-e", "tell application \"System Events\" to delete login item \"Spotify Tray\"").Run()
+	}
+}
+
+func getAppPath() string {
+	executable, _ := os.Executable()
+	path := filepath.Join(filepath.Dir(executable), "../../")
+
+	return path
+}
+
 func readFile() {
 	if len(path) != 0 {
 		content, err := ioutil.ReadFile(path)
 		if err != nil {
-			fmt.Println(err)
 			return
 		}
 

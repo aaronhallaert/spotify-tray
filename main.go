@@ -24,6 +24,7 @@ func onReady() {
 	mProgress := systray.AddMenuItemCheckbox("Show progress?", "Show Progress", storage.GetHasProgress())
 	mArtistFirst := systray.AddMenuItemCheckbox("Show artist first?", "Show artist first", storage.GetArtistFirst())
 	mMoreSpace := systray.AddMenuItemCheckbox("Use more space?", "Use more space", storage.GetMoreSpace())
+	mOpenAtLogin := systray.AddMenuItemCheckbox("Enable at login?", "Use more space", storage.GetOpenAtLogin())
 	systray.AddSeparator()
 	mQuitOrig := systray.AddMenuItem("Quit", "Quit the whole app")
 
@@ -62,6 +63,14 @@ func onReady() {
 				} else {
 					mMoreSpace.Check()
 					storage.SetMoreSpace(true)
+				}
+			case <-mOpenAtLogin.ClickedCh:
+				if mOpenAtLogin.Checked() {
+					mOpenAtLogin.Uncheck()
+					storage.SetOpenAtLogin(false)
+				} else {
+					mOpenAtLogin.Check()
+					storage.SetOpenAtLogin(true)
 				}
 			}
 		}
