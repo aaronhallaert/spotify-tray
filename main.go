@@ -29,6 +29,7 @@ func onReady() {
 	mQuitOrig := systray.AddMenuItem("Quit", "Quit the whole app")
 
 	currentSpotifyData := spotifydata.Init()
+	updateTray(currentSpotifyData)
 
 	go func() {
 		<-mLyrics.ClickedCh
@@ -84,9 +85,14 @@ func onReady() {
 	go func() {
 		for {
 			currentSpotifyData.Update()
-			message := currentSpotifyData.Format(storage.GetHasProgress(), storage.GetArtistFirst(), storage.GetMoreSpace())
-			systray.SetTitle(message)
+			updateTray(currentSpotifyData)
 			time.Sleep(time.Millisecond * 300)
 		}
 	}()
+}
+
+func updateTray(d *spotifydata.Data) {
+	message := d.Format(storage.GetHasProgress(), storage.GetArtistFirst(), storage.GetMoreSpace())
+	systray.SetTemplateIcon(d.GetIcon(), d.GetIcon())
+	systray.SetTitle(message)
 }

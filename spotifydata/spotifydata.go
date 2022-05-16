@@ -3,6 +3,7 @@ package spotifydata
 import (
 	"fmt"
 	"os/exec"
+	"spotify-tray/icons"
 	"strconv"
 	"strings"
 )
@@ -33,40 +34,20 @@ func (d *Data) Update() {
 	d.Progress = newStatus.Progress
 }
 
-func getData() *Data {
-	track := getValueFromScript("name of current track")
-	artist := getValueFromScript("artist of current track")
-	status := getValueFromScript("player state")
-	album := getValueFromScript("album of current track")
-	duration := getValueFromScript("duration of current track")
-	position := strings.ReplaceAll(getValueFromScript("player position"), ",", ".")
-
-	durationFloat, _ := strconv.ParseFloat(duration, 64)
-	durationFloat = durationFloat / 1000
-	positionFloat, _ := strconv.ParseFloat(position, 64)
-	progress := int((positionFloat / durationFloat) * 100)
-
-	statusIcon := "■"
-	if status == "playing" {
-		statusIcon = "▶︎"
-	} else if status == "paused" {
-		statusIcon = "❚❚"
+func (d *Data) GetIcon() []byte {
+	statusIcon := icons.StopIcon
+	if d.Status == "playing" {
+		statusIcon = icons.PlayIcon
+	} else if d.Status == "paused" {
+		statusIcon = icons.PauseIcon
 	}
 
-	return &Data{
-		Track:    track,
-		Artist:   artist,
-		Album:    album,
-		Status:   statusIcon,
-		Duration: durationFloat,
-		Position: positionFloat,
-		Progress: progress,
-	}
+	return statusIcon
 }
 
 func (d *Data) Format(showProgress bool, isArtistFirst bool, isMoreSpace bool) string {
 	if len(d.Track) == 0 {
-		return fmt.Sprintf("%s  Spotify is not playing!", d.Status)
+		return " Spotify is not playing!"
 	}
 
 	formatProgres := fmt.Sprintf("  |  %d%%", d.Progress)
@@ -80,7 +61,7 @@ func (d *Data) Format(showProgress bool, isArtistFirst bool, isMoreSpace bool) s
 	}
 
 	if len(d.Artist) == 0 {
-		return fmt.Sprintf("%s  %s%s", d.Status, trimString(d.Track, formatStrLength), formatProgres)
+		return fmt.Sprintf(" %s%s", trimString(d.Track, formatStrLength), formatProgres)
 	}
 
 	artistAndTrack := [2]string{trimString(d.Artist, formatStrLength), trimString(d.Track, formatStrLength)}
@@ -88,7 +69,7 @@ func (d *Data) Format(showProgress bool, isArtistFirst bool, isMoreSpace bool) s
 		artistAndTrack = [2]string{trimString(d.Track, formatStrLength), trimString(d.Artist, formatStrLength)}
 	}
 
-	return fmt.Sprintf("%s  %s - %s%s", d.Status, artistAndTrack[0], artistAndTrack[1], formatProgres)
+	return fmt.Sprintf(" %s - %s%s", artistAndTrack[0], artistAndTrack[1], formatProgres)
 }
 
 func trimString(s string, maxLength int) string {
@@ -97,6 +78,30 @@ func trimString(s string, maxLength int) string {
 		return trimmed
 	}
 	return s
+}
+
+func getData() *Data {
+	track := getValueFromScript("name of current track")
+	artist := getValueFromScript("artist of current track")
+	status := getValueFromScript("player state")
+	album := getValueFromScript("album of current track")
+	duration := getValueFromScript("duration of current track")
+	position := strings.ReplaceAll(getValueFromScript("player position"), ",", ".")
+
+	durationFloat, _ := strconv.ParseFloat(duration, 64)
+	durationFloat = durationFloat / 1000
+	positionFloat, _ := strconv.ParseFloat(position, 64)
+	progress := int((positionFloat / durationFloat) * 100)
+
+	return &Data{
+		Track:    track,
+		Artist:   artist,
+		Album:    album,
+		Status:   status,
+		Duration: durationFloat,
+		Position: positionFloat,
+		Progress: progress,
+	}
 }
 
 func getValueFromScript(prop string) string {
