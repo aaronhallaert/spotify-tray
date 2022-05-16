@@ -171,7 +171,7 @@ func GetScriptsPath() string {
 	executable, _ := os.Executable()
 	path := filepath.Join(filepath.Dir(executable), "../Resources/") + "/"
 	if !strings.Contains(filepath.Dir(executable), "MacOS") {
-		path = filepath.Dir(executable) + "/"
+		path = filepath.Dir(executable) + "/scripts/"
 	}
 
 	return path

@@ -15,7 +15,16 @@ This application fetches spotify status with osascript from the Spotify Desktop 
 ### CLI
 
 - Build with `make build`
-- Execute with `./lib/spotify-tray` (the scripts should be present in the same folder as the binary for this to work!)
+- Execute with `./spotify-tray` (the scripts should be present in a scripts folder at the same level of the binary for this to work!)
+
+```
+|
+|- spotify-tray
+|- scripts /
+|-- album.sh
+|-- artist.sh
+...
+```
 
 ### App
 
