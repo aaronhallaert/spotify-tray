@@ -80,9 +80,8 @@ func SetOpenAtLogin(value bool) {
 
 func getAppPath() string {
 	executable, _ := os.Executable()
-	path := filepath.Join(filepath.Dir(executable), "../../")
 
-	return path
+	return filepath.Join(filepath.Dir(executable), "../../")
 }
 
 func readFile() {
@@ -99,7 +98,7 @@ func readFile() {
 
 func writeFile() {
 	if len(path) != 0 {
-		content, err := json.Marshal(preferences)
+		content, err := json.Marshal(&preferences)
 		if err != nil {
 			return
 		}
