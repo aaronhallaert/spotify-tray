@@ -15,7 +15,4 @@ bundle: build
 		-o ./dist
 
 generate_icon:
-	./config/generate_icon.sh $(ARGS)
-
-generate_icon_default:
-	./config/generate_icon.sh ./config/trayicon.png
+	./config/generate_icon.sh $(icon)

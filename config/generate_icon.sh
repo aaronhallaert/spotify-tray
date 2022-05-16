@@ -24,12 +24,15 @@ if [ ! -f "$1" ]; then
     exit
 fi
 
-OUTPUT=./icon/iconunix.go
+TMP=${1%.png}
+FILE=${TMP##*/}
+VAR="$(tr a-z A-Z <<< ${FILE:0:1})${FILE:1}"
+OUTPUT=./icons/$FILE.go
 
 echo Generating $OUTPUT
 echo "//+build linux darwin" > $OUTPUT
 echo >> $OUTPUT
-cat "$1" | $GOPATH/bin/2goarray Data icon >> $OUTPUT
+cat "$1" | $GOPATH/bin/2goarray $VAR icons >> $OUTPUT
 
 if [ $? -ne 0 ]; then
     echo Failure generating $OUTPUT
