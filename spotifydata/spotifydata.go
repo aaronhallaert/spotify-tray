@@ -46,11 +46,18 @@ func getData() *Data {
 	positionFloat, _ := strconv.ParseFloat(position, 64)
 	progress := int((positionFloat / durationFloat) * 100)
 
+	statusIcon := "■"
+	if status == "playing" {
+		statusIcon = "▶︎"
+	} else if status == "paused" {
+		statusIcon = "❚❚"
+	}
+
 	return &Data{
 		Track:    track,
 		Artist:   artist,
 		Album:    album,
-		Status:   status,
+		Status:   statusIcon,
 		Duration: durationFloat,
 		Position: positionFloat,
 		Progress: progress,
