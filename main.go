@@ -32,6 +32,8 @@ type SpotifyStatus struct {
 	progress int
 }
 
+var scriptsPath = GetScriptsPath()
+
 func (s *SpotifyStatus) Format(showProgress bool, isArtistFirst bool, isMoreSpace bool) string {
 	if len(s.track) == 0 {
 		return fmt.Sprintf("%s  Spotify is not playing!", s.status)
@@ -68,50 +70,15 @@ func trimString(s string, maxLength int) string {
 }
 
 func fetchSpotifyStatus() SpotifyStatus {
-	executable, _ := os.Executable()
-	scriptsPath := filepath.Join(filepath.Dir(executable), "../Resources/") + "/"
-	if !strings.Contains(filepath.Dir(executable), "MacOS") {
-		scriptsPath = filepath.Dir(executable) + "/"
-	}
+	track := GetValueFromScript("track.sh")
+	artist := GetValueFromScript("artist.sh")
+	status := GetValueFromScript("status.sh")
+	album := GetValueFromScript("album.sh")
+	duration := GetValueFromScript("duration.sh")
+	position := strings.ReplaceAll(GetValueFromScript("position.sh"), ",", ".")
 
-	nTrack, err := exec.Command("/bin/sh", scriptsPath+"track.sh").Output()
-	if err != nil {
-		fmt.Printf("error %s", err)
-	}
-	track := strings.TrimSuffix(string(nTrack), "\n")
-
-	nArtist, err := exec.Command("/bin/sh", scriptsPath+"artist.sh").Output()
-	if err != nil {
-		fmt.Printf("error %s", err)
-	}
-	artist := strings.TrimSuffix(string(nArtist), "\n")
-
-	nStatus, err := exec.Command("/bin/sh", scriptsPath+"status.sh").Output()
-	if err != nil {
-		fmt.Printf("error %s", err)
-	}
-	status := strings.TrimSuffix(string(nStatus), "\n")
-
-	nAlbum, err := exec.Command("/bin/sh", scriptsPath+"album.sh").Output()
-	if err != nil {
-		fmt.Printf("error %s", err)
-	}
-	album := strings.TrimSuffix(string(nAlbum), "\n")
-
-	nDuration, err := exec.Command("/bin/sh", scriptsPath+"duration.sh").Output()
-	if err != nil {
-		fmt.Printf("error %s", err)
-	}
-	duration := strings.TrimSuffix(string(nDuration), "\n")
 	durationFloat, _ := strconv.ParseFloat(duration, 64)
 	durationFloat = durationFloat / 1000
-
-	nPosition, err := exec.Command("/bin/sh", scriptsPath+"position.sh").Output()
-	if err != nil {
-		fmt.Printf("error %s", err)
-	}
-	position := strings.TrimSuffix(string(nPosition), "\n")
-	position = strings.ReplaceAll(position, ",", ".")
 	positionFloat, _ := strconv.ParseFloat(position, 64)
 	progress := int((positionFloat / durationFloat) * 100)
 
@@ -191,4 +158,23 @@ func onReady() {
 			time.Sleep(time.Millisecond * 300)
 		}
 	}()
+}
+
+func GetValueFromScript(file string) string {
+	nValue, err := exec.Command("/bin/sh", scriptsPath+file).Output()
+	if err != nil {
+		fmt.Printf("error %s", err)
+	}
+
+	return strings.TrimSuffix(string(nValue), "\n")
+}
+
+func GetScriptsPath() string {
+	executable, _ := os.Executable()
+	path := filepath.Join(filepath.Dir(executable), "../Resources/") + "/"
+	if !strings.Contains(filepath.Dir(executable), "MacOS") {
+		path = filepath.Dir(executable) + "/"
+	}
+
+	return path
 }
