@@ -130,3 +130,14 @@ func getValueFromScript(prop string) string {
 
 	return strings.TrimSuffix(string(nValue), "\n")
 }
+
+func IsSpotifyRunning() bool {
+	nValue, _ := exec.Command("osascript", "-e", "if application \"Spotify\" is running then\n return true as string \nelse\n return false as string\nend if").Output()
+	isSpotifyRunning, err := strconv.ParseBool(strings.TrimSuffix(string(nValue), "\n"))
+
+	if err != nil {
+		return false
+	}
+
+	return isSpotifyRunning
+}
