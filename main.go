@@ -18,7 +18,6 @@ func main() {
 	onExit := func() {
 	}
 
-	storage.Init()
 	systray.Run(onReady, onExit)
 }
 
@@ -130,9 +129,9 @@ func onReady() {
 	systray.SetTitle("Loading...")
 	mLyrics := systray.AddMenuItem("Lyrics", "Search for lyrics online")
 	systray.AddSeparator()
-	mProgress := systray.AddMenuItemCheckbox("Show progress?", "Show Progress", storage.GetHasProgress())
-	mArtistFirst := systray.AddMenuItemCheckbox("Show artist first?", "Show artist first", storage.GetArtistFirst())
-	mMoreSpace := systray.AddMenuItemCheckbox("Use more space?", "Use more space", storage.GetMoreSpace())
+	mProgress := systray.AddMenuItemCheckbox("Show progress?", "Show Progress", storage.GetPreferencesInstance().GetHasProgress())
+	mArtistFirst := systray.AddMenuItemCheckbox("Show artist first?", "Show artist first", storage.GetPreferencesInstance().GetArtistFirst())
+	mMoreSpace := systray.AddMenuItemCheckbox("Use more space?", "Use more space", storage.GetPreferencesInstance().GetMoreSpace())
 	systray.AddSeparator()
 	mQuitOrig := systray.AddMenuItem("Quit", "Quit the whole app")
 
@@ -156,28 +155,28 @@ func onReady() {
 			case <-mProgress.ClickedCh:
 				if mProgress.Checked() {
 					mProgress.Uncheck()
-					storage.SetHasProgress(false)
+					storage.GetPreferencesInstance().SetHasProgress(false)
 				} else {
 					mProgress.Check()
-					storage.SetHasProgress(true)
+					storage.GetPreferencesInstance().SetHasProgress(true)
 				}
 
 			case <-mArtistFirst.ClickedCh:
 				if mArtistFirst.Checked() {
 					mArtistFirst.Uncheck()
-					storage.SetArtistFirst(false)
+					storage.GetPreferencesInstance().SetArtistFirst(false)
 				} else {
 					mArtistFirst.Check()
-					storage.SetArtistFirst(true)
+					storage.GetPreferencesInstance().SetArtistFirst(true)
 				}
 
 			case <-mMoreSpace.ClickedCh:
 				if mMoreSpace.Checked() {
 					mMoreSpace.Uncheck()
-					storage.SetMoreSpace(false)
+					storage.GetPreferencesInstance().SetMoreSpace(false)
 				} else {
 					mMoreSpace.Check()
-					storage.SetMoreSpace(true)
+					storage.GetPreferencesInstance().SetMoreSpace(true)
 				}
 			}
 		}
@@ -186,7 +185,7 @@ func onReady() {
 	go func() {
 		for {
 			currentSpotifyStatus = fetchSpotifyStatus()
-			message := currentSpotifyStatus.Format(storage.GetHasProgress(), storage.GetArtistFirst(), storage.GetMoreSpace())
+			message := currentSpotifyStatus.Format(storage.GetPreferencesInstance().GetHasProgress(), storage.GetPreferencesInstance().GetArtistFirst(), storage.GetPreferencesInstance().GetMoreSpace())
 			systray.SetTitle(message)
 			time.Sleep(time.Millisecond * 300)
 		}
