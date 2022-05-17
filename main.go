@@ -100,6 +100,8 @@ func onReady() {
 			if spotifydata.IsSpotifyRunning() {
 				currentSpotifyData = spotifydata.GetData()
 				updateTray(currentSpotifyData)
+			} else {
+				currentSpotifyData.Status = ""
 			}
 			time.Sleep(time.Millisecond * 500)
 		}
