@@ -21,9 +21,10 @@ func onReady() {
 	systray.SetTitle("Loading...")
 	mLyrics := systray.AddMenuItem("Lyrics", "Search for lyrics online")
 	systray.AddSeparator()
-	mProgress := systray.AddMenuItemCheckbox("Show progress?", "Show Progress", storage.GetShowProgress())
-	mShowAlbum := systray.AddMenuItemCheckbox("Show album?", "Show Album", storage.GetShowAlbum())
 	mArtistFirst := systray.AddMenuItemCheckbox("Show artist first?", "Show artist first", storage.GetArtistFirst())
+	mShowAlbum := systray.AddMenuItemCheckbox("Show album?", "Show Album", storage.GetShowAlbum())
+	mProgress := systray.AddMenuItemCheckbox("Show progress?", "Show Progress", storage.GetShowProgress())
+	systray.AddSeparator()
 	mMoreSpace := systray.AddMenuItemCheckbox("Use more space?", "Use more space", storage.GetMoreSpace())
 	mOpenAtLogin := systray.AddMenuItemCheckbox("Open at login?", "Open at login", storage.GetOpenAtLogin())
 	systray.AddSeparator()
@@ -45,24 +46,6 @@ func onReady() {
 	go func() {
 		for {
 			select {
-			case <-mProgress.ClickedCh:
-				if mProgress.Checked() {
-					mProgress.Uncheck()
-					storage.SetShowProgress(false)
-				} else {
-					mProgress.Check()
-					storage.SetShowProgress(true)
-				}
-
-			case <-mShowAlbum.ClickedCh:
-				if mShowAlbum.Checked() {
-					mShowAlbum.Uncheck()
-					storage.SetShowAlbum(false)
-				} else {
-					mShowAlbum.Check()
-					storage.SetShowAlbum(true)
-				}
-
 			case <-mArtistFirst.ClickedCh:
 				if mArtistFirst.Checked() {
 					mArtistFirst.Uncheck()
@@ -71,7 +54,22 @@ func onReady() {
 					mArtistFirst.Check()
 					storage.SetArtistFirst(true)
 				}
-
+			case <-mShowAlbum.ClickedCh:
+				if mShowAlbum.Checked() {
+					mShowAlbum.Uncheck()
+					storage.SetShowAlbum(false)
+				} else {
+					mShowAlbum.Check()
+					storage.SetShowAlbum(true)
+				}
+			case <-mProgress.ClickedCh:
+				if mProgress.Checked() {
+					mProgress.Uncheck()
+					storage.SetShowProgress(false)
+				} else {
+					mProgress.Check()
+					storage.SetShowProgress(true)
+				}
 			case <-mMoreSpace.ClickedCh:
 				if mMoreSpace.Checked() {
 					mMoreSpace.Uncheck()
