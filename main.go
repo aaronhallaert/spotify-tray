@@ -28,9 +28,11 @@ func onReady() {
 	systray.AddSeparator()
 	mQuitOrig := systray.AddMenuItem("Quit", "Quit the whole app")
 
-	currentSpotifyData := &spotifydata.Data{}
+	var currentSpotifyData *spotifydata.Data
 	if spotifydata.IsSpotifyRunning() {
-		currentSpotifyData = spotifydata.Init()
+		currentSpotifyData = spotifydata.GetData()
+	} else {
+		currentSpotifyData = &spotifydata.Data{}
 	}
 	updateTray(currentSpotifyData)
 
@@ -88,7 +90,7 @@ func onReady() {
 	go func() {
 		for {
 			if spotifydata.IsSpotifyRunning() {
-				currentSpotifyData.Update()
+				currentSpotifyData = spotifydata.GetData()
 				updateTray(currentSpotifyData)
 			}
 			time.Sleep(time.Millisecond * 500)
