@@ -21,7 +21,8 @@ func onReady() {
 	systray.SetTitle("Loading...")
 	mLyrics := systray.AddMenuItem("Lyrics", "Search for lyrics online")
 	systray.AddSeparator()
-	mProgress := systray.AddMenuItemCheckbox("Show progress?", "Show Progress", storage.GetHasProgress())
+	mProgress := systray.AddMenuItemCheckbox("Show progress?", "Show Progress", storage.GetShowProgress())
+	mShowAlbum := systray.AddMenuItemCheckbox("Show album?", "Show Album", storage.GetShowAlbum())
 	mArtistFirst := systray.AddMenuItemCheckbox("Show artist first?", "Show artist first", storage.GetArtistFirst())
 	mMoreSpace := systray.AddMenuItemCheckbox("Use more space?", "Use more space", storage.GetMoreSpace())
 	mOpenAtLogin := systray.AddMenuItemCheckbox("Open at login?", "Open at login", storage.GetOpenAtLogin())
@@ -47,10 +48,19 @@ func onReady() {
 			case <-mProgress.ClickedCh:
 				if mProgress.Checked() {
 					mProgress.Uncheck()
-					storage.SetHasProgress(false)
+					storage.SetShowProgress(false)
 				} else {
 					mProgress.Check()
-					storage.SetHasProgress(true)
+					storage.SetShowProgress(true)
+				}
+
+			case <-mShowAlbum.ClickedCh:
+				if mShowAlbum.Checked() {
+					mShowAlbum.Uncheck()
+					storage.SetShowAlbum(false)
+				} else {
+					mShowAlbum.Check()
+					storage.SetShowAlbum(true)
 				}
 
 			case <-mArtistFirst.ClickedCh:
@@ -99,7 +109,7 @@ func onReady() {
 }
 
 func updateTray(d *spotifydata.Data) {
-	message := d.Format(storage.GetHasProgress(), storage.GetArtistFirst(), storage.GetMoreSpace())
+	message := d.Format(storage.GetShowProgress(), storage.GetShowAlbum(), storage.GetArtistFirst(), storage.GetMoreSpace())
 	systray.SetTemplateIcon(d.GetIcon(), d.GetIcon())
 	systray.SetTitle(message)
 }

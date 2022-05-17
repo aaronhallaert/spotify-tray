@@ -10,16 +10,18 @@ import (
 )
 
 type Preferences struct {
-	HasProgress bool
-	ArtistFirst bool
-	MoreSpace   bool
+	ShowProgress bool
+	ShowAlbum    bool
+	ArtistFirst  bool
+	MoreSpace    bool
 }
 
 var path = ""
 var preferences = Preferences{
-	HasProgress: true,
-	ArtistFirst: true,
-	MoreSpace:   true,
+	ShowProgress: true,
+	ShowAlbum:    false,
+	ArtistFirst:  true,
+	MoreSpace:    true,
 }
 
 func Init() {
@@ -42,11 +44,19 @@ func readOrWriteFileIfExist(fileName string) {
 	}
 }
 
-func GetHasProgress() bool {
-	return preferences.HasProgress
+func GetShowProgress() bool {
+	return preferences.ShowProgress
 }
-func SetHasProgress(value bool) {
-	preferences.HasProgress = value
+func SetShowProgress(value bool) {
+	preferences.ShowProgress = value
+	writeFile()
+}
+
+func GetShowAlbum() bool {
+	return preferences.ShowAlbum
+}
+func SetShowAlbum(value bool) {
+	preferences.ShowAlbum = value
 	writeFile()
 }
 

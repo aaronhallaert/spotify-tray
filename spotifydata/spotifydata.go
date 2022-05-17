@@ -80,7 +80,7 @@ func (d *Data) GetIcon() []byte {
 	return statusIcon
 }
 
-func (d *Data) Format(showProgress bool, isArtistFirst bool, isMoreSpace bool) string {
+func (d *Data) Format(showProgress bool, showAlbum bool, isArtistFirst bool, isMoreSpace bool) string {
 	if len(d.Track) == 0 {
 		return " Spotify is not playing!"
 	}
@@ -95,6 +95,11 @@ func (d *Data) Format(showProgress bool, isArtistFirst bool, isMoreSpace bool) s
 		formatStrLength = 20
 	}
 
+	formatAlbum := fmt.Sprintf(" - %s", trimString(d.Album, formatStrLength))
+	if !showAlbum {
+		formatAlbum = ""
+	}
+
 	if len(d.Artist) == 0 {
 		return fmt.Sprintf(" %s%s", trimString(d.Track, formatStrLength), formatProgres)
 	}
@@ -104,7 +109,7 @@ func (d *Data) Format(showProgress bool, isArtistFirst bool, isMoreSpace bool) s
 		artistAndTrack = [2]string{trimString(d.Track, formatStrLength), trimString(d.Artist, formatStrLength)}
 	}
 
-	return fmt.Sprintf(" %s - %s%s", artistAndTrack[0], artistAndTrack[1], formatProgres)
+	return fmt.Sprintf(" %s - %s%s%s", artistAndTrack[0], artistAndTrack[1], formatAlbum, formatProgres)
 }
 
 func trimString(s string, maxLength int) string {
