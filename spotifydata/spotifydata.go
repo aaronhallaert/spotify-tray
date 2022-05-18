@@ -3,7 +3,6 @@ package spotifydata
 import (
 	"fmt"
 	"os/exec"
-	"spotify-tray/icons"
 	"strconv"
 	"strings"
 	"sync"
@@ -20,43 +19,59 @@ type Data struct {
 }
 
 func GetData() *Data {
-	data := &Data{}
 	var wg sync.WaitGroup
 	wg.Add(6)
 
+	track, artist, album, status, duration, position := "", "", "", "", 1.0, 0.0
+
 	go func() {
 		defer wg.Done()
-		data.Track = getValueFromScript("name of current track")
+		track = getValueFromScript("name of current track")
 	}()
 	go func() {
 		defer wg.Done()
-		data.Artist = getValueFromScript("artist of current track")
+		artist = getValueFromScript("artist of current track")
 	}()
 	go func() {
 		defer wg.Done()
-		data.Album = getValueFromScript("album of current track")
+		album = getValueFromScript("album of current track")
 	}()
 	go func() {
 		defer wg.Done()
-		data.Status = getValueFromScript("player state")
+		status = getValueFromScript("player state")
 	}()
 	go func() {
 		defer wg.Done()
-		duration := getValueFromScript("duration of current track")
-		durationFloat, _ := strconv.ParseFloat(duration, 64)
-		data.Duration = durationFloat / 1000
+		durationString := getValueFromScript("duration of current track")
+		durationFloat, _ := strconv.ParseFloat(durationString, 64)
+		duration = durationFloat / 1000
 	}()
 	go func() {
 		defer wg.Done()
-		position := strings.ReplaceAll(getValueFromScript("player position"), ",", ".")
-		positionFloat, _ := strconv.ParseFloat(position, 64)
-		data.Position = positionFloat
+		positionString := strings.ReplaceAll(getValueFromScript("player position"), ",", ".")
+		positionFloat, _ := strconv.ParseFloat(positionString, 64)
+		position = positionFloat
 	}()
 
 	wg.Wait()
-	data.Progress = int((data.Position / data.Duration) * 100)
 
-	return data
+	progress := int((position / duration) * 100)
+	statusIcon := "■"
+	if status == "playing" {
+		statusIcon = "▶︎"
+	} else if status == "paused" {
+		statusIcon = "❚❚"
+	}
+
+	return &Data{
+		track,
+		artist,
+		album,
+		statusIcon,
+		duration,
+		position,
+		progress,
+	}
 }
 
 func getValueFromScript(prop string) string {
@@ -69,20 +84,20 @@ func getValueFromScript(prop string) string {
 	return strings.TrimSuffix(string(nValue), "\n")
 }
 
-func (d *Data) GetIcon() []byte {
-	statusIcon := icons.StopIcon
-	if d.Status == "playing" {
-		statusIcon = icons.PlayIcon
-	} else if d.Status == "paused" {
-		statusIcon = icons.PauseIcon
-	}
+// Only use when systray doesn't have memory leak:
+// func (d *Data) GetIcon() []byte {
+// 	if d.Status == "playing" {
+// 		return icons.PlayIcon
+// 	} else if d.Status == "paused" {
+// 		return icons.PauseIcon
+// 	}
 
-	return statusIcon
-}
+// 	return icons.StopIcon
+// }
 
 func (d *Data) Format(showProgress bool, showAlbum bool, isArtistFirst bool, isMoreSpace bool) string {
 	if len(d.Track) == 0 {
-		return " Spotify is not playing!"
+		return fmt.Sprintf("%s Spotify is not playing!", d.Status)
 	}
 
 	formatProgres := fmt.Sprintf("  |  %d%%", d.Progress)
@@ -101,7 +116,7 @@ func (d *Data) Format(showProgress bool, showAlbum bool, isArtistFirst bool, isM
 	}
 
 	if len(d.Artist) == 0 {
-		return fmt.Sprintf(" %s%s", trimString(d.Track, formatStrLength), formatProgres)
+		return fmt.Sprintf("%s  %s%s", d.Status, trimString(d.Track, formatStrLength), formatProgres)
 	}
 
 	artistAndTrack := [2]string{trimString(d.Artist, formatStrLength), trimString(d.Track, formatStrLength)}
@@ -109,7 +124,7 @@ func (d *Data) Format(showProgress bool, showAlbum bool, isArtistFirst bool, isM
 		artistAndTrack = [2]string{trimString(d.Track, formatStrLength), trimString(d.Artist, formatStrLength)}
 	}
 
-	return fmt.Sprintf(" %s - %s%s%s", artistAndTrack[0], artistAndTrack[1], formatAlbum, formatProgres)
+	return fmt.Sprintf("%s  %s - %s%s%s", d.Status, artistAndTrack[0], artistAndTrack[1], formatAlbum, formatProgres)
 }
 
 func trimString(s string, maxLength int) string {
@@ -122,11 +137,11 @@ func trimString(s string, maxLength int) string {
 
 func IsSpotifyRunning() bool {
 	nValue, _ := exec.Command("osascript", "-e", "if application \"Spotify\" is running then\n return true as string \nelse\n return false as string\nend if").Output()
-	isSpotifyRunning, err := strconv.ParseBool(strings.TrimSuffix(string(nValue), "\n"))
+	_, err := strconv.ParseBool(strings.TrimSuffix(string(nValue), "\n"))
 
-	if err != nil {
+	if err == nil {
+		return true
+	} else {
 		return false
 	}
-
-	return isSpotifyRunning
 }

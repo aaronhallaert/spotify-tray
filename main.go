@@ -30,11 +30,9 @@ func onReady() {
 	systray.AddSeparator()
 	mQuitOrig := systray.AddMenuItem("Quit", "Quit the whole app")
 
-	var currentSpotifyData *spotifydata.Data
+	currentSpotifyData := &spotifydata.Data{}
 	if spotifydata.IsSpotifyRunning() {
 		currentSpotifyData = spotifydata.GetData()
-	} else {
-		currentSpotifyData = &spotifydata.Data{}
 	}
 	updateTray(currentSpotifyData)
 
@@ -110,6 +108,6 @@ func onReady() {
 
 func updateTray(d *spotifydata.Data) {
 	message := d.Format(storage.GetShowProgress(), storage.GetShowAlbum(), storage.GetArtistFirst(), storage.GetMoreSpace())
-	systray.SetTemplateIcon(d.GetIcon(), d.GetIcon())
+	// systray.SetTemplateIcon(d.GetIcon(), d.GetIcon())
 	systray.SetTitle(message)
 }
