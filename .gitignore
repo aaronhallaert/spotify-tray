@@ -3,3 +3,6 @@
 spotify-tray
 
 /dist
+
+tmpDir/
+tmp/
