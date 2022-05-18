@@ -107,7 +107,6 @@ func onReady() {
 }
 
 func updateTray(d *spotifydata.Data) {
-	message := d.Format(storage.GetShowProgress(), storage.GetShowAlbum(), storage.GetArtistFirst(), storage.GetMoreSpace())
 	// systray.SetTemplateIcon(d.GetIcon(), d.GetIcon())
-	systray.SetTitle(message)
+	systray.SetTitle(d.Format(storage.GetShowProgress(), storage.GetShowAlbum(), storage.GetArtistFirst(), storage.GetMoreSpace()))
 }
