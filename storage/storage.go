@@ -2,23 +2,26 @@ package storage
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 type Preferences struct {
-	HasProgress bool
-	ArtistFirst bool
-	MoreSpace   bool
+	ShowProgress bool
+	ShowAlbum    bool
+	ArtistFirst  bool
+	MoreSpace    bool
 }
 
 var path = ""
 var preferences = Preferences{
-	HasProgress: true,
-	ArtistFirst: true,
-	MoreSpace:   true,
+	ShowProgress: true,
+	ShowAlbum:    false,
+	ArtistFirst:  true,
+	MoreSpace:    true,
 }
 
 func Init() {
@@ -28,7 +31,6 @@ func Init() {
 	}
 
 	path = dirname + "/spotify-tray/preferences.json"
-	fmt.Println(path)
 	readOrWriteFileIfExist(path)
 }
 
@@ -42,11 +44,19 @@ func readOrWriteFileIfExist(fileName string) {
 	}
 }
 
-func GetHasProgress() bool {
-	return preferences.HasProgress
+func GetShowProgress() bool {
+	return preferences.ShowProgress
 }
-func SetHasProgress(value bool) {
-	preferences.HasProgress = value
+func SetShowProgress(value bool) {
+	preferences.ShowProgress = value
+	writeFile()
+}
+
+func GetShowAlbum() bool {
+	return preferences.ShowAlbum
+}
+func SetShowAlbum(value bool) {
+	preferences.ShowAlbum = value
 	writeFile()
 }
 
@@ -66,11 +76,28 @@ func SetMoreSpace(value bool) {
 	writeFile()
 }
 
+func GetOpenAtLogin() bool {
+	entries, _ := exec.Command("osascript", "-e", "tell application \"System Events\" to get the name of every login item").Output()
+	return strings.Contains(string(entries), "Spotify Tray")
+}
+func SetOpenAtLogin(value bool) {
+	if value {
+		exec.Command("osascript", "-e", "tell application \"System Events\" to make login item at end with properties {name: \"Spotify Tray\",path:\""+getAppPath()+"\", hidden:false}").Run()
+	} else {
+		exec.Command("osascript", "-e", "tell application \"System Events\" to delete login item \"Spotify Tray\"").Run()
+	}
+}
+
+func getAppPath() string {
+	executable, _ := os.Executable()
+
+	return filepath.Join(filepath.Dir(executable), "../../")
+}
+
 func readFile() {
 	if len(path) != 0 {
 		content, err := ioutil.ReadFile(path)
 		if err != nil {
-			fmt.Println(err)
 			return
 		}
 
@@ -81,7 +108,7 @@ func readFile() {
 
 func writeFile() {
 	if len(path) != 0 {
-		content, err := json.Marshal(preferences)
+		content, err := json.Marshal(&preferences)
 		if err != nil {
 			return
 		}

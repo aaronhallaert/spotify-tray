@@ -243,7 +243,7 @@ func makeDMGFromTemplate(templateDMG, appBundleName string) error {
 	defer os.RemoveAll(tmpDir)
 
 	// copy the template image, since we'll be modifying it
-	tmpDMG := "./tmp.dmg"
+	tmpDMG := "./tmpDir/tmp.dmg"
 	err = copyFile(templateDMG, tmpDMG, nil)
 	if err != nil {
 		return fmt.Errorf("making copy of template DMG: %v", err)

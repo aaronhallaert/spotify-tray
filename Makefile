@@ -2,11 +2,11 @@
 # https://gist.github.com/isaacs/62a2d1825d04437c6f08
 
 build:
-	go build -o ./lib/spotify-tray main.go
+	go build -o ./resources/spotify-tray main.go
 
 bundle: build
 	go run ./config/macapp.go \
-		-assets ./lib/ \
+		-assets ./resources \
 		-bin spotify-tray \
 		-icon ./config/appicon1024.png \
 		-identifier com.spotify-tray \
@@ -15,7 +15,4 @@ bundle: build
 		-o ./dist
 
 generate_icon:
-	./config/generate_icon.sh $(ARGS)
-
-generate_icon_default:
-	./config/generate_icon.sh ./config/trayicon.png
+	./config/generate_icon.sh $(icon)

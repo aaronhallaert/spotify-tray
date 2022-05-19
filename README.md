@@ -15,7 +15,7 @@ This application fetches spotify status with osascript from the Spotify Desktop 
 ### CLI
 
 - Build with `make build`
-- Execute with `./lib/spotify-tray` (the scripts should be present in the same folder as the binary for this to work!)
+- Execute with `./resources/spotify-tray`
 
 ### App
 
@@ -24,7 +24,7 @@ This application fetches spotify status with osascript from the Spotify Desktop 
 
 ### Generate icon
 
-You can generate a custom tray icon with `make generate_icon 'path-to-file'` or you can generate the default icon with `make generate_icon_default`.
+You can generate a custom tray icon with `make generate_icon icon=path-to-file`
 
 ## How to use the app
 
