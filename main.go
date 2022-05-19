@@ -37,13 +37,10 @@ func onReady() {
 	updateTray(currentSpotifyData)
 
 	go func() {
-		<-mLyrics.ClickedCh
-		open.Run("https://www.google.com/search?q=" + currentSpotifyData.Track + " - " + currentSpotifyData.Artist + " lyrics")
-	}()
-
-	go func() {
 		for {
 			select {
+			case <-mLyrics.ClickedCh:
+				open.Run("https://www.google.com/search?q=" + currentSpotifyData.Track + " - " + currentSpotifyData.Artist + " lyrics")
 			case <-mArtistFirst.ClickedCh:
 				if mArtistFirst.Checked() {
 					mArtistFirst.Uncheck()
