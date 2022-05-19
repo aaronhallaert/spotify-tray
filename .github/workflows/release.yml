@@ -1,9 +1,9 @@
 name: Main
 
-on: 
+on:
   push:
-    branches:
-    - main
+    tags:
+      - "v*.*.*"
 
 jobs:
   build:
@@ -15,11 +15,12 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: 1.18
-      - name: Build
-        run: make build
+      - name: Build/Bundle
+        run: make bundle
       - name: Release
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           files: |
-            dist/Spotify Tray.dmg
+            ./dist/Spotify Tray.dmg
