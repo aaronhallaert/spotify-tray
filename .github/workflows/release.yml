@@ -19,8 +19,8 @@ jobs:
         run: make bundle
       - name: Release
         uses: softprops/action-gh-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           files: |
             ./dist/Spotify Tray.dmg
+          name: "spotify-tray ${{ github.ref }}"
+          generate_release_notes: true
