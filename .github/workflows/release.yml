@@ -11,6 +11,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Set version
+        run: |
+          echo "VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
@@ -22,5 +25,5 @@ jobs:
         with:
           files: |
             ./dist/Spotify Tray.dmg
-          name: "spotify-tray ${{ github.ref }}"
+          name: "spotify-tray ${{ env.VERSION }}"
           generate_release_notes: true
