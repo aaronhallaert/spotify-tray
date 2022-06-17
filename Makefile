@@ -8,7 +8,7 @@ bundle: build
 	go run ./config/macapp.go \
 		-assets ./dist \
 		-bin spotify-tray \
-		-icon ./config/appicon1024.png \
+		-icon ./assets/appicon1024.png \
 		-identifier com.spotify-tray \
 		-name "Spotify Tray" \
 		-dmg ./config/template.dmg \
