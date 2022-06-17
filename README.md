@@ -15,7 +15,7 @@ Download the latest version of the app dmg from the [releases page](https://gith
 Launch the app or from the terminal as a process. A system tray should appear with information about current track data from the Spotify desktop app. You can format this information with some options by clicking on the system tray:
 
 - `Show artist first`: show the artist first and then the title (default: `true`)
-- `Show album`: show the album as well (default: `false`, lot of space get's taken in if you also enable the album) 
+- `Show album`: show the album as well (default: `false`, lot of space get's taken in if you also enable the album)
 - `Show progress`: show a percentage with how far the track has progressed (default: `true`)
 - `Use more space`: use `64` characters for artist and `64` characters for track title, otherwise use `20` characters (default: `true`)
 - `Open at login`: open the app when mac starts up or user logs in
@@ -27,12 +27,12 @@ Launch the app or from the terminal as a process. A system tray should appear wi
 ### CLI
 
 - Build with `make build`
-- Execute with `./resources/spotify-tray`
+- Execute with `./dist/spotify-tray`
 
 ### App
 
 - Build with `make bundle`
-- Open the `Spotify Tray.dmg` that was created in the `dist` folder
+- Open the `Spotify Tray.dmg` that was created in the `release` folder
 
 ### Generate icon
 

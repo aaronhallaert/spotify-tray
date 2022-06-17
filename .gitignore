@@ -3,6 +3,7 @@
 spotify-tray
 
 /dist
+/release
 
 tmpDir/
 tmp/
