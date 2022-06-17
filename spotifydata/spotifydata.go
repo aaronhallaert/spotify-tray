@@ -19,10 +19,9 @@ type Data struct {
 }
 
 func GetData() *Data {
+	track, artist, album, status, duration, position := "", "", "", "", 1.0, 0.0
 	var wg sync.WaitGroup
 	wg.Add(6)
-
-	track, artist, album, status, duration, position := "", "", "", "", 1.0, 0.0
 
 	go func() {
 		defer wg.Done()
@@ -42,15 +41,12 @@ func GetData() *Data {
 	}()
 	go func() {
 		defer wg.Done()
-		durationString := getValueFromScript("duration of current track")
-		durationFloat, _ := strconv.ParseFloat(durationString, 64)
+		durationFloat, _ := strconv.ParseFloat(getValueFromScript("duration of current track"), 64)
 		duration = durationFloat / 1000
 	}()
 	go func() {
 		defer wg.Done()
-		positionString := strings.ReplaceAll(getValueFromScript("player position"), ",", ".")
-		positionFloat, _ := strconv.ParseFloat(positionString, 64)
-		position = positionFloat
+		position, _ = strconv.ParseFloat(strings.ReplaceAll(getValueFromScript("player position"), ",", "."), 64)
 	}()
 
 	wg.Wait()
@@ -83,17 +79,6 @@ func getValueFromScript(prop string) string {
 
 	return strings.TrimSuffix(string(nValue), "\n")
 }
-
-// Only use when systray doesn't have memory leak:
-// func (d *Data) GetIcon() []byte {
-// 	if d.Status == "playing" {
-// 		return icons.PlayIcon
-// 	} else if d.Status == "paused" {
-// 		return icons.PauseIcon
-// 	}
-
-// 	return icons.StopIcon
-// }
 
 func (d *Data) Format(showProgress bool, showAlbum bool, isArtistFirst bool, isMoreSpace bool) string {
 	if len(d.Track) == 0 {
