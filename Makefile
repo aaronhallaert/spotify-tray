@@ -4,7 +4,7 @@
 build:
 	go build -o ./dist/spotify-tray main.go
 
-bundle: build
+macapp: build
 	go run ./config/macapp.go \
 		-assets ./dist \
 		-bin spotify-tray \

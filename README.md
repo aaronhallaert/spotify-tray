@@ -31,7 +31,7 @@ Launch the app or from the terminal as a process. A system tray should appear wi
 
 ### App
 
-- Build with `make bundle`
+- Build with `make macapp`
 - Open the `Spotify Tray.dmg` that was created in the `release` folder
 
 ### Generate icon
