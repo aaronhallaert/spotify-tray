@@ -2,7 +2,6 @@ package storage
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -10,10 +9,11 @@ import (
 )
 
 type Preferences struct {
-	ShowProgress bool
-	ShowAlbum    bool
-	ArtistFirst  bool
-	MoreSpace    bool
+	ShowProgress       bool
+	ShowAlbum          bool
+	ArtistFirst        bool
+	MoreSpace          bool
+	AlternateSeperator bool
 }
 
 var path = ""
@@ -76,6 +76,14 @@ func SetMoreSpace(value bool) {
 	writeFile()
 }
 
+func GetAlternateSeperator() bool {
+	return preferences.AlternateSeperator
+}
+func SetAlternateSeperator(value bool) {
+	preferences.AlternateSeperator = value
+	writeFile()
+}
+
 func GetOpenAtLogin() bool {
 	entries, _ := exec.Command("osascript", "-e", "tell application \"System Events\" to get the name of every login item").Output()
 	return strings.Contains(string(entries), "Spotify Tray")
@@ -96,7 +104,7 @@ func getAppPath() string {
 
 func readFile() {
 	if len(path) != 0 {
-		content, err := ioutil.ReadFile(path)
+		content, err := os.ReadFile(path)
 		if err != nil {
 			return
 		}
@@ -113,13 +121,13 @@ func writeFile() {
 			return
 		}
 
-		err = ioutil.WriteFile(path, content, 0644)
+		err = os.WriteFile(path, content, 0644)
 
 		if os.IsNotExist(err) {
 			dirname, _ := os.UserConfigDir()
 
 			os.Mkdir(filepath.Join(dirname, "/spotify-tray"), 0755)
-			ioutil.WriteFile(path, content, 0644)
+			os.WriteFile(path, content, 0644)
 		}
 	}
 }

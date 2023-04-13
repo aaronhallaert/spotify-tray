@@ -80,7 +80,7 @@ func getValueFromScript(prop string) string {
 	return strings.TrimSuffix(string(nValue), "\n")
 }
 
-func (d *Data) Format(showProgress bool, showAlbum bool, isArtistFirst bool, isMoreSpace bool) string {
+func (d *Data) Format(showProgress bool, showAlbum bool, isArtistFirst bool, isMoreSpace bool, isAlternateSeperator bool) string {
 	if len(d.Track) == 0 {
 		return fmt.Sprintf("%s Spotify is not playing!", d.Status)
 	}
@@ -95,7 +95,12 @@ func (d *Data) Format(showProgress bool, showAlbum bool, isArtistFirst bool, isM
 		formatStrLength = 20
 	}
 
-	formatAlbum := fmt.Sprintf(" - %s", trimString(d.Album, formatStrLength))
+	seperator := "-"
+	if isAlternateSeperator {
+		seperator = " -§- "
+	}
+
+	formatAlbum := fmt.Sprintf(" %s %s", seperator, trimString(d.Album, formatStrLength))
 	if !showAlbum {
 		formatAlbum = ""
 	}
@@ -109,7 +114,7 @@ func (d *Data) Format(showProgress bool, showAlbum bool, isArtistFirst bool, isM
 		artistAndTrack = [2]string{trimString(d.Track, formatStrLength), trimString(d.Artist, formatStrLength)}
 	}
 
-	return fmt.Sprintf("%s  %s - %s%s%s", d.Status, artistAndTrack[0], artistAndTrack[1], formatAlbum, formatProgres)
+	return fmt.Sprintf("%s  %s %s %s%s%s", d.Status, artistAndTrack[0], seperator, artistAndTrack[1], formatAlbum, formatProgres)
 }
 
 func trimString(s string, maxLength int) string {

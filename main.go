@@ -26,6 +26,7 @@ func onReady() {
 	mProgress := systray.AddMenuItemCheckbox("Show progress?", "Show Progress", storage.GetShowProgress())
 	systray.AddSeparator()
 	mMoreSpace := systray.AddMenuItemCheckbox("Use more space?", "Use more space", storage.GetMoreSpace())
+	mAlternateSeperator := systray.AddMenuItemCheckbox("Use alternate seperator?", "Show Alternate seperator", storage.GetAlternateSeperator())
 	mOpenAtLogin := systray.AddMenuItemCheckbox("Open at login?", "Open at login", storage.GetOpenAtLogin())
 	systray.AddSeparator()
 	mQuitOrig := systray.AddMenuItem("Quit", "Quit the whole app")
@@ -73,6 +74,14 @@ func onReady() {
 					mMoreSpace.Check()
 					storage.SetMoreSpace(true)
 				}
+			case <-mAlternateSeperator.ClickedCh:
+				if mAlternateSeperator.Checked() {
+					mAlternateSeperator.Uncheck()
+					storage.SetAlternateSeperator(false)
+				} else {
+					mAlternateSeperator.Check()
+					storage.SetAlternateSeperator(true)
+				}
 			case <-mOpenAtLogin.ClickedCh:
 				if mOpenAtLogin.Checked() {
 					mOpenAtLogin.Uncheck()
@@ -104,5 +113,11 @@ func onReady() {
 }
 
 func updateTray(d *spotifydata.Data) {
-	systray.SetTitle(d.Format(storage.GetShowProgress(), storage.GetShowAlbum(), storage.GetArtistFirst(), storage.GetMoreSpace()))
+	systray.SetTitle(d.Format(
+		storage.GetShowProgress(),
+		storage.GetShowAlbum(),
+		storage.GetArtistFirst(),
+		storage.GetMoreSpace(),
+		storage.GetAlternateSeperator(),
+	))
 }
