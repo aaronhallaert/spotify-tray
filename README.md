@@ -18,6 +18,7 @@ Launch the app or from the terminal as a process. A system tray should appear wi
 - `Show album`: show the album as well (default: `false`, lot of space get's taken in if you also enable the album)
 - `Show progress`: show a percentage with how far the track has progressed (default: `true`)
 - `Use more space`: use `64` characters for artist and `64` characters for track title, otherwise use `20` characters (default: `true`)
+- `Use alternate separator`: use `-§-` as a separator instead of `-`.
 - `Open at login`: open the app when mac starts up or user logs in
 
 ## How to create the app
