@@ -5,7 +5,6 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
-	"sync"
 )
 
 type Data struct {
@@ -18,38 +17,22 @@ type Data struct {
 	Progress int
 }
 
-func GetData() *Data {
+func GetData(getProgress bool, getAlbum bool) *Data {
 	track, artist, album, status, duration, position := "", "", "", "", 1.0, 0.0
-	var wg sync.WaitGroup
-	wg.Add(6)
 
-	go func() {
-		defer wg.Done()
-		track = getValueFromScript("name of current track")
-	}()
-	go func() {
-		defer wg.Done()
-		artist = getValueFromScript("artist of current track")
-	}()
-	go func() {
-		defer wg.Done()
+	track = getValueFromScript("name of current track")
+	artist = getValueFromScript("artist of current track")
+	status = getValueFromScript("player state")
+
+	if getAlbum {
 		album = getValueFromScript("album of current track")
-	}()
-	go func() {
-		defer wg.Done()
-		status = getValueFromScript("player state")
-	}()
-	go func() {
-		defer wg.Done()
+	}
+
+	if getProgress {
 		durationFloat, _ := strconv.ParseFloat(getValueFromScript("duration of current track"), 64)
 		duration = durationFloat / 1000
-	}()
-	go func() {
-		defer wg.Done()
 		position, _ = strconv.ParseFloat(strings.ReplaceAll(getValueFromScript("player position"), ",", "."), 64)
-	}()
-
-	wg.Wait()
+	}
 
 	progress := int((position / duration) * 100)
 	statusIcon := "■"

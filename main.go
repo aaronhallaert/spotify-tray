@@ -33,7 +33,7 @@ func onReady() {
 
 	currentSpotifyData := &spotifydata.Data{}
 	if spotifydata.IsSpotifyRunning() {
-		currentSpotifyData = spotifydata.GetData()
+		currentSpotifyData = spotifydata.GetData(storage.GetShowProgress(), storage.GetShowAlbum())
 	}
 	updateTray(currentSpotifyData)
 
@@ -102,7 +102,7 @@ func onReady() {
 	go func() {
 		for {
 			if spotifydata.IsSpotifyRunning() {
-				currentSpotifyData = spotifydata.GetData()
+				currentSpotifyData = spotifydata.GetData(storage.GetShowProgress(), storage.GetShowAlbum())
 				updateTray(currentSpotifyData)
 			} else {
 				currentSpotifyData.Status = ""
