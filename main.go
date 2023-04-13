@@ -107,7 +107,7 @@ func onReady() {
 			} else {
 				currentSpotifyData.Status = ""
 			}
-			time.Sleep(time.Millisecond * 500)
+			time.Sleep(time.Second)
 		}
 	}()
 }
