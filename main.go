@@ -1,20 +1,37 @@
 package main
 
 import (
+	"os"
 	"spotify-tray/spotifydata"
 	"spotify-tray/storage"
+	"sync"
+	"syscall"
 	"time"
 
 	"github.com/getlantern/systray"
 	"github.com/skratchdot/open-golang/open"
 )
 
+var wg sync.WaitGroup
+
 func main() {
+	selfRestartTimer := time.NewTimer(time.Hour * 8)
+	wg.Add(1)
+
+	// Restart every 8 hours to avoid memory build up
+	go func() {
+		defer wg.Done()
+		<-selfRestartTimer.C
+		RestartSelf()
+	}()
+
 	onExit := func() {
 	}
 
 	storage.Init()
 	systray.Run(onReady, onExit)
+
+	wg.Wait()
 }
 
 func onReady() {
@@ -120,4 +137,15 @@ func updateTray(d *spotifydata.Data) {
 		storage.GetMoreSpace(),
 		storage.GetAlternateSeparator(),
 	))
+}
+
+func RestartSelf() error {
+	self, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	args := os.Args
+	env := os.Environ()
+
+	return syscall.Exec(self, args, env)
 }
