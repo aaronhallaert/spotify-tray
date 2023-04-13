@@ -15,10 +15,10 @@ import (
 var wg sync.WaitGroup
 
 func main() {
-	selfRestartTimer := time.NewTimer(time.Hour * 8)
+	selfRestartTimer := time.NewTimer(time.Hour * 4)
 	wg.Add(1)
 
-	// Restart every 8 hours to avoid memory build up
+	// Restart every 4 hours to avoid memory build up
 	go func() {
 		defer wg.Done()
 		<-selfRestartTimer.C
