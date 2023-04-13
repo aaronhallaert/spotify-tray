@@ -13,7 +13,7 @@ type Preferences struct {
 	ShowAlbum          bool
 	ArtistFirst        bool
 	MoreSpace          bool
-	AlternateSeperator bool
+	AlternateSeparator bool
 }
 
 var path = ""
@@ -76,11 +76,11 @@ func SetMoreSpace(value bool) {
 	writeFile()
 }
 
-func GetAlternateSeperator() bool {
-	return preferences.AlternateSeperator
+func GetAlternateSeparator() bool {
+	return preferences.AlternateSeparator
 }
-func SetAlternateSeperator(value bool) {
-	preferences.AlternateSeperator = value
+func SetAlternateSeparator(value bool) {
+	preferences.AlternateSeparator = value
 	writeFile()
 }
 

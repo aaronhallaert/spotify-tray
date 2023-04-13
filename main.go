@@ -26,7 +26,7 @@ func onReady() {
 	mProgress := systray.AddMenuItemCheckbox("Show progress?", "Show Progress", storage.GetShowProgress())
 	systray.AddSeparator()
 	mMoreSpace := systray.AddMenuItemCheckbox("Use more space?", "Use more space", storage.GetMoreSpace())
-	mAlternateSeperator := systray.AddMenuItemCheckbox("Use alternate seperator?", "Show Alternate seperator", storage.GetAlternateSeperator())
+	mAlternateSeparator := systray.AddMenuItemCheckbox("Use alternate separator?", "Show Alternate separator", storage.GetAlternateSeparator())
 	mOpenAtLogin := systray.AddMenuItemCheckbox("Open at login?", "Open at login", storage.GetOpenAtLogin())
 	systray.AddSeparator()
 	mQuitOrig := systray.AddMenuItem("Quit", "Quit the whole app")
@@ -74,13 +74,13 @@ func onReady() {
 					mMoreSpace.Check()
 					storage.SetMoreSpace(true)
 				}
-			case <-mAlternateSeperator.ClickedCh:
-				if mAlternateSeperator.Checked() {
-					mAlternateSeperator.Uncheck()
-					storage.SetAlternateSeperator(false)
+			case <-mAlternateSeparator.ClickedCh:
+				if mAlternateSeparator.Checked() {
+					mAlternateSeparator.Uncheck()
+					storage.SetAlternateSeparator(false)
 				} else {
-					mAlternateSeperator.Check()
-					storage.SetAlternateSeperator(true)
+					mAlternateSeparator.Check()
+					storage.SetAlternateSeparator(true)
 				}
 			case <-mOpenAtLogin.ClickedCh:
 				if mOpenAtLogin.Checked() {
@@ -118,6 +118,6 @@ func updateTray(d *spotifydata.Data) {
 		storage.GetShowAlbum(),
 		storage.GetArtistFirst(),
 		storage.GetMoreSpace(),
-		storage.GetAlternateSeperator(),
+		storage.GetAlternateSeparator(),
 	))
 }
