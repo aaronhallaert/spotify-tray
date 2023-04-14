@@ -5,7 +5,6 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
-	"sync"
 )
 
 type Data struct {
@@ -18,38 +17,22 @@ type Data struct {
 	Progress int
 }
 
-func GetData() *Data {
+func GetData(getProgress bool, getAlbum bool) *Data {
 	track, artist, album, status, duration, position := "", "", "", "", 1.0, 0.0
-	var wg sync.WaitGroup
-	wg.Add(6)
 
-	go func() {
-		defer wg.Done()
-		track = getValueFromScript("name of current track")
-	}()
-	go func() {
-		defer wg.Done()
-		artist = getValueFromScript("artist of current track")
-	}()
-	go func() {
-		defer wg.Done()
+	track = getValueFromScript("name of current track")
+	artist = getValueFromScript("artist of current track")
+	status = getValueFromScript("player state")
+
+	if getAlbum {
 		album = getValueFromScript("album of current track")
-	}()
-	go func() {
-		defer wg.Done()
-		status = getValueFromScript("player state")
-	}()
-	go func() {
-		defer wg.Done()
+	}
+
+	if getProgress {
 		durationFloat, _ := strconv.ParseFloat(getValueFromScript("duration of current track"), 64)
 		duration = durationFloat / 1000
-	}()
-	go func() {
-		defer wg.Done()
 		position, _ = strconv.ParseFloat(strings.ReplaceAll(getValueFromScript("player position"), ",", "."), 64)
-	}()
-
-	wg.Wait()
+	}
 
 	progress := int((position / duration) * 100)
 	statusIcon := "■"
@@ -80,7 +63,7 @@ func getValueFromScript(prop string) string {
 	return strings.TrimSuffix(string(nValue), "\n")
 }
 
-func (d *Data) Format(showProgress bool, showAlbum bool, isArtistFirst bool, isMoreSpace bool) string {
+func (d *Data) Format(showProgress bool, showAlbum bool, isArtistFirst bool, isMoreSpace bool, isAlternateSeparator bool) string {
 	if len(d.Track) == 0 {
 		return fmt.Sprintf("%s Spotify is not playing!", d.Status)
 	}
@@ -95,7 +78,12 @@ func (d *Data) Format(showProgress bool, showAlbum bool, isArtistFirst bool, isM
 		formatStrLength = 20
 	}
 
-	formatAlbum := fmt.Sprintf(" - %s", trimString(d.Album, formatStrLength))
+	separator := "-"
+	if isAlternateSeparator {
+		separator = " -§- "
+	}
+
+	formatAlbum := fmt.Sprintf(" %s %s", separator, trimString(d.Album, formatStrLength))
 	if !showAlbum {
 		formatAlbum = ""
 	}
@@ -109,7 +97,7 @@ func (d *Data) Format(showProgress bool, showAlbum bool, isArtistFirst bool, isM
 		artistAndTrack = [2]string{trimString(d.Track, formatStrLength), trimString(d.Artist, formatStrLength)}
 	}
 
-	return fmt.Sprintf("%s  %s - %s%s%s", d.Status, artistAndTrack[0], artistAndTrack[1], formatAlbum, formatProgres)
+	return fmt.Sprintf("%s  %s %s %s%s%s", d.Status, artistAndTrack[0], separator, artistAndTrack[1], formatAlbum, formatProgres)
 }
 
 func trimString(s string, maxLength int) string {

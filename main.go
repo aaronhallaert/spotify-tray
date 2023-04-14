@@ -26,13 +26,14 @@ func onReady() {
 	mProgress := systray.AddMenuItemCheckbox("Show progress?", "Show Progress", storage.GetShowProgress())
 	systray.AddSeparator()
 	mMoreSpace := systray.AddMenuItemCheckbox("Use more space?", "Use more space", storage.GetMoreSpace())
+	mAlternateSeparator := systray.AddMenuItemCheckbox("Use alternate separator?", "Show Alternate separator", storage.GetAlternateSeparator())
 	mOpenAtLogin := systray.AddMenuItemCheckbox("Open at login?", "Open at login", storage.GetOpenAtLogin())
 	systray.AddSeparator()
 	mQuitOrig := systray.AddMenuItem("Quit", "Quit the whole app")
 
 	currentSpotifyData := &spotifydata.Data{}
 	if spotifydata.IsSpotifyRunning() {
-		currentSpotifyData = spotifydata.GetData()
+		currentSpotifyData = spotifydata.GetData(storage.GetShowProgress(), storage.GetShowAlbum())
 	}
 	updateTray(currentSpotifyData)
 
@@ -73,6 +74,14 @@ func onReady() {
 					mMoreSpace.Check()
 					storage.SetMoreSpace(true)
 				}
+			case <-mAlternateSeparator.ClickedCh:
+				if mAlternateSeparator.Checked() {
+					mAlternateSeparator.Uncheck()
+					storage.SetAlternateSeparator(false)
+				} else {
+					mAlternateSeparator.Check()
+					storage.SetAlternateSeparator(true)
+				}
 			case <-mOpenAtLogin.ClickedCh:
 				if mOpenAtLogin.Checked() {
 					mOpenAtLogin.Uncheck()
@@ -93,16 +102,22 @@ func onReady() {
 	go func() {
 		for {
 			if spotifydata.IsSpotifyRunning() {
-				currentSpotifyData = spotifydata.GetData()
+				currentSpotifyData = spotifydata.GetData(storage.GetShowProgress(), storage.GetShowAlbum())
 				updateTray(currentSpotifyData)
 			} else {
 				currentSpotifyData.Status = ""
 			}
-			time.Sleep(time.Millisecond * 500)
+			time.Sleep(time.Second)
 		}
 	}()
 }
 
 func updateTray(d *spotifydata.Data) {
-	systray.SetTitle(d.Format(storage.GetShowProgress(), storage.GetShowAlbum(), storage.GetArtistFirst(), storage.GetMoreSpace()))
+	systray.SetTitle(d.Format(
+		storage.GetShowProgress(),
+		storage.GetShowAlbum(),
+		storage.GetArtistFirst(),
+		storage.GetMoreSpace(),
+		storage.GetAlternateSeparator(),
+	))
 }

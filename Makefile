@@ -16,3 +16,7 @@ macapp: build
 
 generate_icon:
 	./config/generate_icon.sh $(icon)
+
+clean:
+	rm -rf dist
+	rm -rf release
