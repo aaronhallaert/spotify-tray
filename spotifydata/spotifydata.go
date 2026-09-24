@@ -8,13 +8,14 @@ import (
 )
 
 type Data struct {
-	Track    string
-	Artist   string
-	Album    string
-	Status   string
-	Duration float64
-	Position float64
-	Progress int
+	Track       string
+	Artist      string
+	Album       string
+	Status      string
+	PlayerState string
+	Duration    float64
+	Position    float64
+	Progress    int
 }
 
 func GetData(getProgress bool, getAlbum bool) *Data {
@@ -48,6 +49,7 @@ func GetData(getProgress bool, getAlbum bool) *Data {
 		artist,
 		album,
 		statusIcon,
+		status,
 		duration,
 		position,
 		progress,
@@ -111,11 +113,14 @@ func trimString(s string, maxLength int) string {
 
 func IsSpotifyRunning() bool {
 	nValue, _ := exec.Command("osascript", "-e", "if application \"Spotify\" is running then\n return true as string \nelse\n return false as string\nend if").Output()
-	_, err := strconv.ParseBool(strings.TrimSuffix(string(nValue), "\n"))
+	running, err := strconv.ParseBool(strings.TrimSpace(string(nValue)))
+	return err == nil && running
+}
 
-	if err == nil {
-		return true
-	} else {
-		return false
+func TogglePlayback() error {
+	output, err := exec.Command("osascript", "-e", "if application \"Spotify\" is running then\n tell application \"Spotify\" to playpause\nelse\n error \"Spotify is not running\"\nend if").CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("toggle Spotify playback: %w: %s", err, strings.TrimSpace(string(output)))
 	}
+	return nil
 }
