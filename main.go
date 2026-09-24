@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"spotify-tray/spotifydata"
 	"spotify-tray/storage"
 	"time"
@@ -19,6 +20,8 @@ func main() {
 
 func onReady() {
 	systray.SetTitle("Loading...")
+	mPlayback := systray.AddMenuItem("Play", "Toggle Spotify playback")
+	mPlayback.Hide()
 	mLyrics := systray.AddMenuItem("Lyrics", "Search for lyrics online")
 	systray.AddSeparator()
 	mArtistFirst := systray.AddMenuItemCheckbox("Show artist first?", "Show artist first", storage.GetArtistFirst())
@@ -32,14 +35,57 @@ func onReady() {
 	mQuitOrig := systray.AddMenuItem("Quit", "Quit the whole app")
 
 	currentSpotifyData := &spotifydata.Data{}
-	if spotifydata.IsSpotifyRunning() {
-		currentSpotifyData = spotifydata.GetData(storage.GetShowProgress(), storage.GetShowAlbum())
+	playbackTitle := ""
+	playbackVisible := false
+	refresh := func() {
+		currentSpotifyData = &spotifydata.Data{}
+		if spotifydata.IsSpotifyRunning() {
+			currentSpotifyData = spotifydata.GetData(storage.GetShowProgress(), storage.GetShowAlbum())
+		}
+		updateTray(currentSpotifyData)
+		title, visible := playbackMenuTitle(currentSpotifyData)
+		if visible {
+			if title != playbackTitle {
+				mPlayback.SetTitle(title)
+				playbackTitle = title
+			}
+			if !playbackVisible {
+				mPlayback.Show()
+			}
+		} else if playbackVisible {
+			mPlayback.Hide()
+		}
+		playbackVisible = visible
 	}
-	updateTray(currentSpotifyData)
+	refresh()
+
+	playbackChanged := make(chan struct{}, 1)
+	go func() {
+		for range mPlayback.ClickedCh {
+			if err := spotifydata.TogglePlayback(); err != nil {
+				fmt.Printf("error %s\n", err)
+			}
+			select {
+			case playbackChanged <- struct{}{}:
+			default:
+			}
+		}
+	}()
 
 	go func() {
+		<-mQuitOrig.ClickedCh
+		systray.Quit()
+	}()
+
+	go func() {
+		ticker := time.NewTicker(time.Second)
+		defer ticker.Stop()
 		for {
 			select {
+			case <-ticker.C:
+				refresh()
+			case <-playbackChanged:
+				refresh()
 			case <-mLyrics.ClickedCh:
 				open.Run("https://www.google.com/search?q=" + currentSpotifyData.Track + " - " + currentSpotifyData.Artist + " lyrics")
 			case <-mArtistFirst.ClickedCh:
@@ -93,23 +139,20 @@ func onReady() {
 			}
 		}
 	}()
+}
 
-	go func() {
-		<-mQuitOrig.ClickedCh
-		systray.Quit()
-	}()
-
-	go func() {
-		for {
-			if spotifydata.IsSpotifyRunning() {
-				currentSpotifyData = spotifydata.GetData(storage.GetShowProgress(), storage.GetShowAlbum())
-				updateTray(currentSpotifyData)
-			} else {
-				currentSpotifyData.Status = ""
-			}
-			time.Sleep(time.Second)
-		}
-	}()
+func playbackMenuTitle(data *spotifydata.Data) (string, bool) {
+	if data.Track == "" {
+		return "", false
+	}
+	switch data.PlayerState {
+	case "playing":
+		return "Pause", true
+	case "paused":
+		return "Play", true
+	default:
+		return "", false
+	}
 }
 
 func updateTray(d *spotifydata.Data) {

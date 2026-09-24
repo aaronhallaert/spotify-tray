@@ -8,13 +8,14 @@ import (
 )
 
 type Data struct {
-	Track    string
-	Artist   string
-	Album    string
-	Status   string
-	Duration float64
-	Position float64
-	Progress int
+	Track       string
+	Artist      string
+	Album       string
+	Status      string
+	PlayerState string
+	Duration    float64
+	Position    float64
+	Progress    int
 }
 
 func GetData(getProgress bool, getAlbum bool) *Data {
@@ -36,9 +37,10 @@ func GetData(getProgress bool, getAlbum bool) *Data {
 
 	progress := int((position / duration) * 100)
 	statusIcon := "■"
-	if status == "playing" {
+	switch status {
+	case "playing":
 		statusIcon = "▶︎"
-	} else if status == "paused" {
+	case "paused":
 		statusIcon = "❚❚"
 	}
 
@@ -47,6 +49,7 @@ func GetData(getProgress bool, getAlbum bool) *Data {
 		artist,
 		album,
 		statusIcon,
+		status,
 		duration,
 		position,
 		progress,
@@ -73,9 +76,9 @@ func (d *Data) Format(showProgress bool, showAlbum bool, isArtistFirst bool, isM
 		formatProgres = ""
 	}
 
-	formatStrLength := 64
+	formatStrLength, formatStrArtist := 64, 64
 	if !isMoreSpace {
-		formatStrLength = 20
+		formatStrLength, formatStrArtist = 25, 20
 	}
 
 	separator := "-"
@@ -92,9 +95,9 @@ func (d *Data) Format(showProgress bool, showAlbum bool, isArtistFirst bool, isM
 		return fmt.Sprintf("%s  %s%s", d.Status, trimString(d.Track, formatStrLength), formatProgres)
 	}
 
-	artistAndTrack := [2]string{trimString(d.Artist, formatStrLength), trimString(d.Track, formatStrLength)}
+	artistAndTrack := [2]string{trimString(d.Artist, formatStrArtist), trimString(d.Track, formatStrLength)}
 	if !isArtistFirst {
-		artistAndTrack = [2]string{trimString(d.Track, formatStrLength), trimString(d.Artist, formatStrLength)}
+		artistAndTrack = [2]string{trimString(d.Track, formatStrLength), trimString(d.Artist, formatStrArtist)}
 	}
 
 	return fmt.Sprintf("%s  %s %s %s%s%s", d.Status, artistAndTrack[0], separator, artistAndTrack[1], formatAlbum, formatProgres)
@@ -110,11 +113,14 @@ func trimString(s string, maxLength int) string {
 
 func IsSpotifyRunning() bool {
 	nValue, _ := exec.Command("osascript", "-e", "if application \"Spotify\" is running then\n return true as string \nelse\n return false as string\nend if").Output()
-	_, err := strconv.ParseBool(strings.TrimSuffix(string(nValue), "\n"))
+	running, err := strconv.ParseBool(strings.TrimSpace(string(nValue)))
+	return err == nil && running
+}
 
-	if err == nil {
-		return true
-	} else {
-		return false
+func TogglePlayback() error {
+	output, err := exec.Command("osascript", "-e", "if application \"Spotify\" is running then\n tell application \"Spotify\" to playpause\nelse\n error \"Spotify is not running\"\nend if").CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("toggle Spotify playback: %w: %s", err, strings.TrimSpace(string(output)))
 	}
+	return nil
 }
