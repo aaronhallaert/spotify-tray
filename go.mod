@@ -2,10 +2,7 @@ module spotify-tray
 
 go 1.27.1
 
-require (
-	github.com/getlantern/systray v1.2.2
-	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
-)
+require github.com/getlantern/systray v1.2.2
 
 require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/getlantern/systray"
-	"github.com/skratchdot/open-golang/open"
 )
 
 func main() {
@@ -23,7 +22,6 @@ func onReady() {
 	trayTitle := titleUpdater{current: "Loading...", update: systray.SetTitle}
 	mPlayback := systray.AddMenuItem("Play", "Toggle Spotify playback")
 	mPlayback.Hide()
-	mLyrics := systray.AddMenuItem("Lyrics", "Search for lyrics online")
 	systray.AddSeparator()
 	mArtistFirst := systray.AddMenuItemCheckbox("Show artist first?", "Show artist first", storage.GetArtistFirst())
 	mShowAlbum := systray.AddMenuItemCheckbox("Show album?", "Show Album", storage.GetShowAlbum())
@@ -35,7 +33,6 @@ func onReady() {
 	systray.AddSeparator()
 	mQuitOrig := systray.AddMenuItem("Quit", "Quit the whole app")
 
-	currentSpotifyData := &spotifydata.Data{}
 	playbackTitle := ""
 	playbackVisible := false
 	var retry retryBackoff
@@ -45,7 +42,6 @@ func onReady() {
 			if retry.fail(err, time.Now()) {
 				fmt.Printf("error %s\n", err)
 			}
-			currentSpotifyData = &spotifydata.Data{}
 			trayTitle.set("Unable to read Spotify")
 			if playbackVisible {
 				mPlayback.Hide()
@@ -54,15 +50,14 @@ func onReady() {
 			return
 		}
 		retry.reset()
-		currentSpotifyData = data
-		trayTitle.set(currentSpotifyData.Format(
+		trayTitle.set(data.Format(
 			storage.GetShowProgress(),
 			storage.GetShowAlbum(),
 			storage.GetArtistFirst(),
 			storage.GetMoreSpace(),
 			storage.GetAlternateSeparator(),
 		))
-		title, visible := playbackMenuTitle(currentSpotifyData)
+		title, visible := playbackMenuTitle(data)
 		if visible {
 			if title != playbackTitle {
 				mPlayback.SetTitle(title)
@@ -107,8 +102,6 @@ func onReady() {
 				}
 			case <-playbackChanged:
 				refresh()
-			case <-mLyrics.ClickedCh:
-				open.Run("https://www.google.com/search?q=" + currentSpotifyData.Track + " - " + currentSpotifyData.Artist + " lyrics")
 			case <-mArtistFirst.ClickedCh:
 				if mArtistFirst.Checked() {
 					mArtistFirst.Uncheck()
