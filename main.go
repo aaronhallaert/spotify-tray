@@ -2,11 +2,10 @@ package main
 
 import (
 	"fmt"
+	"spotify-tray/internal/tray"
 	"spotify-tray/spotifydata"
 	"spotify-tray/storage"
 	"time"
-
-	"github.com/getlantern/systray"
 )
 
 func main() {
@@ -14,24 +13,24 @@ func main() {
 	}
 
 	storage.Init()
-	systray.Run(onReady, onExit)
+	tray.Run(onReady, onExit)
 }
 
 func onReady() {
-	systray.SetTitle("Loading...")
-	trayTitle := titleUpdater{current: "Loading...", update: systray.SetTitle}
-	mPlayback := systray.AddMenuItem("Play", "Toggle Spotify playback")
+	tray.SetTitle("Loading...")
+	trayTitle := titleUpdater{current: "Loading...", update: tray.SetTitle}
+	mPlayback := tray.AddMenuItem("Play", "Toggle Spotify playback")
 	mPlayback.Hide()
-	systray.AddSeparator()
-	mArtistFirst := systray.AddMenuItemCheckbox("Show artist first?", "Show artist first", storage.GetArtistFirst())
-	mShowAlbum := systray.AddMenuItemCheckbox("Show album?", "Show Album", storage.GetShowAlbum())
-	mProgress := systray.AddMenuItemCheckbox("Show progress?", "Show Progress", storage.GetShowProgress())
-	systray.AddSeparator()
-	mMoreSpace := systray.AddMenuItemCheckbox("Use more space?", "Use more space", storage.GetMoreSpace())
-	mAlternateSeparator := systray.AddMenuItemCheckbox("Use alternate separator?", "Show Alternate separator", storage.GetAlternateSeparator())
-	mOpenAtLogin := systray.AddMenuItemCheckbox("Open at login?", "Open at login", storage.GetOpenAtLogin())
-	systray.AddSeparator()
-	mQuitOrig := systray.AddMenuItem("Quit", "Quit the whole app")
+	tray.AddSeparator()
+	mArtistFirst := tray.AddMenuItemCheckbox("Show artist first?", "Show artist first", storage.GetArtistFirst())
+	mShowAlbum := tray.AddMenuItemCheckbox("Show album?", "Show Album", storage.GetShowAlbum())
+	mProgress := tray.AddMenuItemCheckbox("Show progress?", "Show Progress", storage.GetShowProgress())
+	tray.AddSeparator()
+	mMoreSpace := tray.AddMenuItemCheckbox("Use more space?", "Use more space", storage.GetMoreSpace())
+	mAlternateSeparator := tray.AddMenuItemCheckbox("Use alternate separator?", "Show Alternate separator", storage.GetAlternateSeparator())
+	mOpenAtLogin := tray.AddMenuItemCheckbox("Open at login?", "Open at login", storage.GetOpenAtLogin())
+	tray.AddSeparator()
+	mQuitOrig := tray.AddMenuItem("Quit", "Quit the whole app")
 
 	playbackTitle := ""
 	playbackVisible := false
@@ -88,7 +87,7 @@ func onReady() {
 
 	go func() {
 		<-mQuitOrig.ClickedCh
-		systray.Quit()
+		tray.Quit()
 	}()
 
 	go func() {
