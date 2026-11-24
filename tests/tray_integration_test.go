@@ -1,4 +1,4 @@
-package tray
+package tests_test
 
 import (
 	"context"
