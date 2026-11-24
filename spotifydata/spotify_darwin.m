@@ -1,9 +1,11 @@
 #import <AppKit/AppKit.h>
 #import "spotify_darwin.h"
 
-static NSAppleEventDescriptor *spotifyTarget(void) {
-    NSRunningApplication *app = [NSRunningApplication
-        runningApplicationsWithBundleIdentifier:@"com.spotify.client"].firstObject;
+static NSRunningApplication *spotifyApplication(void) {
+    return [NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.spotify.client"].firstObject;
+}
+
+static NSAppleEventDescriptor *spotifyTarget(NSRunningApplication *app) {
     // Address the existing PID so a poll cannot launch Spotify, even if it quits.
     return app ? [NSAppleEventDescriptor descriptorWithProcessIdentifier:app.processIdentifier] : nil;
 }
@@ -89,9 +91,10 @@ static double readNumber(NSAppleEventDescriptor *target, OSType property,
     return number.doubleValue;
 }
 
-char *spotify_read(bool progress, bool album, char **error) {
+char *spotify_read(bool progress, bool album, const char *cached_id, int cached_pid, char **error) {
     @autoreleasepool {
-        NSAppleEventDescriptor *target = spotifyTarget();
+        NSRunningApplication *app = spotifyApplication();
+        NSAppleEventDescriptor *target = spotifyTarget(app);
         if (!target) {
             return strdup("{}");
         }
@@ -111,16 +114,28 @@ char *spotify_read(bool progress, bool album, char **error) {
 
         if (!message && state != 'kPSS') {
             NSAppleEventDescriptor *track = propertyObject('pTrk', nil);
-            NSString *name = readText(target, 'pnam', track, &message);
-            NSString *artist = readText(target, 'pArt', track, &message);
-            if (name) data[@"Track"] = name;
-            if (artist) data[@"Artist"] = artist;
-            if (album) {
-                NSString *title = readText(target, 'pAlb', track, &message);
-                if (title) data[@"Album"] = title;
+            NSString *trackID = readText(target, 'ID  ', track, &message);
+            NSString *cachedID = [NSString stringWithUTF8String:cached_id];
+            BOOL refreshMetadata = !message &&
+                (trackID.length == 0 || ![trackID isEqualToString:cachedID] ||
+                 app.processIdentifier != cached_pid);
+            if (trackID) data[@"TrackID"] = trackID;
+            data[@"ProcessID"] = @(app.processIdentifier);
+            data[@"MetadataRefreshed"] = @(refreshMetadata);
+            if (refreshMetadata) {
+                NSString *name = readText(target, 'pnam', track, &message);
+                NSString *artist = readText(target, 'pArt', track, &message);
+                if (name) data[@"Track"] = name;
+                if (artist) data[@"Artist"] = artist;
+                if (album) {
+                    NSString *title = readText(target, 'pAlb', track, &message);
+                    if (title) data[@"Album"] = title;
+                }
+                if (progress) {
+                    data[@"Duration"] = @(readNumber(target, 'pDur', track, &message) / 1000.0);
+                }
             }
             if (progress) {
-                data[@"Duration"] = @(readNumber(target, 'pDur', track, &message) / 1000.0);
                 data[@"Position"] = @(readNumber(target, 'pPos', nil, &message));
             }
         }
@@ -142,7 +157,7 @@ char *spotify_read(bool progress, bool album, char **error) {
 
 char *spotify_toggle(void) {
     @autoreleasepool {
-        NSAppleEventDescriptor *target = spotifyTarget();
+        NSAppleEventDescriptor *target = spotifyTarget(spotifyApplication());
         if (!target) {
             return strdup("Spotify is not running");
         }

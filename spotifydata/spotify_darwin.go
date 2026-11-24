@@ -16,12 +16,14 @@ import (
 
 var spotifyMu sync.Mutex
 
-func readSpotify(progress, album bool) ([]byte, error) {
+func readSpotify(progress, album bool, cachedID string, cachedPID int) ([]byte, error) {
 	spotifyMu.Lock()
 	defer spotifyMu.Unlock()
 
+	id := C.CString(cachedID)
+	defer C.free(unsafe.Pointer(id))
 	var message *C.char
-	result := C.spotify_read(C.bool(progress), C.bool(album), &message)
+	result := C.spotify_read(C.bool(progress), C.bool(album), id, C.int(cachedPID), &message)
 	defer C.free(unsafe.Pointer(result))
 	if message != nil {
 		defer C.free(unsafe.Pointer(message))

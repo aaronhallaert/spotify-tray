@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"sync"
+	"time"
 )
 
 type Data struct {
@@ -17,20 +19,78 @@ type Data struct {
 	Progress    int
 }
 
-func GetData(getProgress bool, getAlbum bool) (*Data, error) {
-	snapshot, err := readSpotify(getProgress, getAlbum)
-	if err != nil {
-		return nil, fmt.Errorf("read Spotify: %w", err)
-	}
-	return decodeSnapshot(snapshot)
+const metadataRefreshInterval = 30 * time.Second
+
+type spotifySnapshot struct {
+	Data
+	TrackID           string
+	ProcessID         int
+	MetadataRefreshed bool
 }
 
-func decodeSnapshot(snapshot []byte) (*Data, error) {
-	var data Data
+type spotifyReader struct {
+	mu          sync.Mutex
+	read        func(bool, bool, string, int) ([]byte, error)
+	cached      spotifySnapshot
+	cachedAt    time.Time
+	getProgress bool
+	getAlbum    bool
+}
+
+var defaultReader = spotifyReader{read: readSpotify}
+
+func GetData(getProgress bool, getAlbum bool) (*Data, error) {
+	return defaultReader.getData(getProgress, getAlbum, time.Now())
+}
+
+func (r *spotifyReader) getData(getProgress, getAlbum bool, now time.Time) (*Data, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	cachedID, cachedPID := r.cached.TrackID, r.cached.ProcessID
+	if now.Sub(r.cachedAt) >= metadataRefreshInterval ||
+		getProgress != r.getProgress || getAlbum != r.getAlbum {
+		cachedID, cachedPID = "", 0
+	}
+	snapshot, err := r.read(getProgress, getAlbum, cachedID, cachedPID)
+	if err != nil {
+		r.cached = spotifySnapshot{}
+		return nil, fmt.Errorf("read Spotify: %w", err)
+	}
+
+	data, err := decodeSnapshot(snapshot)
+	if err != nil {
+		r.cached = spotifySnapshot{}
+		return nil, err
+	}
+	if data.PlayerState == "playing" || data.PlayerState == "paused" {
+		if !data.MetadataRefreshed {
+			if cachedID == "" || data.TrackID != cachedID || data.ProcessID != cachedPID {
+				r.cached = spotifySnapshot{}
+				return nil, fmt.Errorf("Spotify returned incomplete track metadata")
+			}
+			data.Track, data.Artist = r.cached.Track, r.cached.Artist
+			data.Album, data.Duration = r.cached.Album, r.cached.Duration
+		} else {
+			r.cachedAt = now
+		}
+		r.cached = *data
+		r.getProgress, r.getAlbum = getProgress, getAlbum
+	} else {
+		r.cached = spotifySnapshot{}
+	}
+	return finishData(&data.Data), nil
+}
+
+func decodeSnapshot(snapshot []byte) (*spotifySnapshot, error) {
+	var data spotifySnapshot
 	if err := json.Unmarshal(snapshot, &data); err != nil {
 		return nil, fmt.Errorf("decode Spotify data: %w", err)
 	}
+	return &data, nil
+}
 
+func finishData(data *Data) *Data {
 	switch data.PlayerState {
 	case "playing":
 		data.Status = "▶︎"
@@ -43,7 +103,7 @@ func decodeSnapshot(snapshot []byte) (*Data, error) {
 	if data.Duration > 0 {
 		data.Progress = int(math.Max(0, math.Min(100, data.Position/data.Duration*100)))
 	}
-	return &data, nil
+	return data
 }
 
 func (d *Data) Format(showProgress bool, showAlbum bool, isArtistFirst bool, isMoreSpace bool, isAlternateSeparator bool) string {

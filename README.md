@@ -7,6 +7,7 @@ _MacOS only_
 ## Description
 
 This application reads Spotify Desktop status once per second using in-process macOS Apple Events and displays it in the system tray.
+Track metadata is cached by track ID and refreshed at least every 30 seconds; playback state and progress are still checked every second.
 
 On first use, allow Spotify Tray to control Spotify when macOS asks. You can change this permission in System Settings > Privacy & Security > Automation. The open-at-login setting still uses `osascript`, but only at startup and when you change that setting.
 
