@@ -405,6 +405,8 @@ const infoPlistTpl = `<?xml version="1.0" encoding="UTF-8"?>
 	<string>{{.BundleIdentifier}}</string>
 	<key>NSHighResolutionCapable</key>
 	<true/>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>Spotify Tray reads the current track and controls Spotify playback.</string>
 	<key>LSUIElement</key>
 	<true/>
 </dict>

@@ -6,7 +6,9 @@ _MacOS only_
 
 ## Description
 
-This application fetches spotify status with osascript from the Spotify Desktop application and displays the result in the system tray.
+This application reads Spotify Desktop status once per second using in-process macOS Apple Events and displays it in the system tray.
+
+On first use, allow Spotify Tray to control Spotify when macOS asks. You can change this permission in System Settings > Privacy & Security > Automation. The open-at-login setting still uses `osascript`, but only at startup and when you change that setting.
 
 ## How to use the app
 

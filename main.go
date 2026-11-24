@@ -38,10 +38,16 @@ func onReady() {
 	playbackTitle := ""
 	playbackVisible := false
 	refresh := func() {
-		currentSpotifyData = &spotifydata.Data{}
-		if spotifydata.IsSpotifyRunning() {
-			currentSpotifyData = spotifydata.GetData(storage.GetShowProgress(), storage.GetShowAlbum())
+		data, err := spotifydata.GetData(storage.GetShowProgress(), storage.GetShowAlbum())
+		if err != nil {
+			fmt.Printf("error %s\n", err)
+			currentSpotifyData = &spotifydata.Data{}
+			systray.SetTitle("Unable to read Spotify")
+			mPlayback.Hide()
+			playbackVisible = false
+			return
 		}
+		currentSpotifyData = data
 		updateTray(currentSpotifyData)
 		title, visible := playbackMenuTitle(currentSpotifyData)
 		if visible {

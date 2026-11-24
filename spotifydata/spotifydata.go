@@ -1,10 +1,9 @@
 package spotifydata
 
 import (
+	"encoding/json"
 	"fmt"
-	"os/exec"
-	"strconv"
-	"strings"
+	"math"
 )
 
 type Data struct {
@@ -18,52 +17,33 @@ type Data struct {
 	Progress    int
 }
 
-func GetData(getProgress bool, getAlbum bool) *Data {
-	track, artist, album, status, duration, position := "", "", "", "", 1.0, 0.0
-
-	track = getValueFromScript("name of current track")
-	artist = getValueFromScript("artist of current track")
-	status = getValueFromScript("player state")
-
-	if getAlbum {
-		album = getValueFromScript("album of current track")
+func GetData(getProgress bool, getAlbum bool) (*Data, error) {
+	snapshot, err := readSpotify(getProgress, getAlbum)
+	if err != nil {
+		return nil, fmt.Errorf("read Spotify: %w", err)
 	}
-
-	if getProgress {
-		durationFloat, _ := strconv.ParseFloat(getValueFromScript("duration of current track"), 64)
-		duration = durationFloat / 1000
-		position, _ = strconv.ParseFloat(strings.ReplaceAll(getValueFromScript("player position"), ",", "."), 64)
-	}
-
-	progress := int((position / duration) * 100)
-	statusIcon := "■"
-	switch status {
-	case "playing":
-		statusIcon = "▶︎"
-	case "paused":
-		statusIcon = "❚❚"
-	}
-
-	return &Data{
-		track,
-		artist,
-		album,
-		statusIcon,
-		status,
-		duration,
-		position,
-		progress,
-	}
+	return decodeSnapshot(snapshot)
 }
 
-func getValueFromScript(prop string) string {
-	nValue, err := exec.Command("osascript", "-e", "if application \"Spotify\" is running then\n tell application \"Spotify\"\n return "+prop+" as string \nend tell \nend if").Output()
-
-	if err != nil {
-		fmt.Printf("error %s", err)
+func decodeSnapshot(snapshot []byte) (*Data, error) {
+	var data Data
+	if err := json.Unmarshal(snapshot, &data); err != nil {
+		return nil, fmt.Errorf("decode Spotify data: %w", err)
 	}
 
-	return strings.TrimSuffix(string(nValue), "\n")
+	switch data.PlayerState {
+	case "playing":
+		data.Status = "▶︎"
+	case "paused":
+		data.Status = "❚❚"
+	case "stopped":
+		data.Status = "■"
+	}
+
+	if data.Duration > 0 {
+		data.Progress = int(math.Max(0, math.Min(100, data.Position/data.Duration*100)))
+	}
+	return &data, nil
 }
 
 func (d *Data) Format(showProgress bool, showAlbum bool, isArtistFirst bool, isMoreSpace bool, isAlternateSeparator bool) string {
@@ -111,16 +91,9 @@ func trimString(s string, maxLength int) string {
 	return s
 }
 
-func IsSpotifyRunning() bool {
-	nValue, _ := exec.Command("osascript", "-e", "if application \"Spotify\" is running then\n return true as string \nelse\n return false as string\nend if").Output()
-	running, err := strconv.ParseBool(strings.TrimSpace(string(nValue)))
-	return err == nil && running
-}
-
 func TogglePlayback() error {
-	output, err := exec.Command("osascript", "-e", "if application \"Spotify\" is running then\n tell application \"Spotify\" to playpause\nelse\n error \"Spotify is not running\"\nend if").CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("toggle Spotify playback: %w: %s", err, strings.TrimSpace(string(output)))
+	if err := toggleSpotify(); err != nil {
+		return fmt.Errorf("toggle Spotify playback: %w", err)
 	}
 	return nil
 }
