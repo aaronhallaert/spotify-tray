@@ -1,9 +1,11 @@
 package main
 
 import (
+	"errors"
 	"reflect"
 	"spotify-tray/spotifydata"
 	"testing"
+	"time"
 )
 
 func TestPlaybackMenuTitle(t *testing.T) {
@@ -36,11 +38,38 @@ func TestTitleUpdaterSkipsUnchangedTitles(t *testing.T) {
 		current: "Loading...",
 		update:  func(title string) { updates = append(updates, title) },
 	}
+
 	for _, title := range []string{"Loading...", "Song", "Song", "Unable to read Spotify", "Unable to read Spotify", "Song"} {
 		updater.set(title)
 	}
 	want := []string{"Song", "Unable to read Spotify", "Song"}
 	if !reflect.DeepEqual(updates, want) {
 		t.Fatalf("title updates = %q, want %q", updates, want)
+	}
+}
+
+func TestRetryBackoff(t *testing.T) {
+	now := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	var retry retryBackoff
+	err := errors.New("permission denied")
+	for i, delay := range []time.Duration{1, 2, 4, 8, 16, 30, 30} {
+		if !retry.ready(now) {
+			t.Fatalf("retry %d should be ready", i)
+		}
+		if logged := retry.fail(err, now); logged != (i == 0) {
+			t.Fatalf("retry %d log = %v", i, logged)
+		}
+		delay *= time.Second
+		if retry.ready(now.Add(delay-time.Nanosecond)) || !retry.ready(now.Add(delay)) {
+			t.Fatalf("retry %d did not wait %v", i, delay)
+		}
+		now = now.Add(delay)
+	}
+	if !retry.fail(errors.New("Spotify timed out"), now) {
+		t.Fatal("changed error should be logged")
+	}
+	retry.reset()
+	if !retry.ready(now) || !retry.fail(err, now) || retry.delay != time.Second {
+		t.Fatal("successful read should reset retry delay and log deduplication")
 	}
 }

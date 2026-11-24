@@ -38,10 +38,13 @@ func onReady() {
 	currentSpotifyData := &spotifydata.Data{}
 	playbackTitle := ""
 	playbackVisible := false
+	var retry retryBackoff
 	refresh := func() {
 		data, err := spotifydata.GetData(storage.GetShowProgress(), storage.GetShowAlbum())
 		if err != nil {
-			fmt.Printf("error %s\n", err)
+			if retry.fail(err, time.Now()) {
+				fmt.Printf("error %s\n", err)
+			}
 			currentSpotifyData = &spotifydata.Data{}
 			trayTitle.set("Unable to read Spotify")
 			if playbackVisible {
@@ -50,6 +53,7 @@ func onReady() {
 			playbackVisible = false
 			return
 		}
+		retry.reset()
 		currentSpotifyData = data
 		trayTitle.set(currentSpotifyData.Format(
 			storage.GetShowProgress(),
@@ -98,7 +102,9 @@ func onReady() {
 		for {
 			select {
 			case <-ticker.C:
-				refresh()
+				if retry.ready(time.Now()) {
+					refresh()
+				}
 			case <-playbackChanged:
 				refresh()
 			case <-mLyrics.ClickedCh:
@@ -173,6 +179,33 @@ func playbackMenuTitle(data *spotifydata.Data) (string, bool) {
 type titleUpdater struct {
 	current string
 	update  func(string)
+}
+
+type retryBackoff struct {
+	next      time.Time
+	delay     time.Duration
+	lastError string
+}
+
+func (r *retryBackoff) ready(now time.Time) bool {
+	return !now.Before(r.next)
+}
+
+func (r *retryBackoff) fail(err error, now time.Time) bool {
+	if r.delay == 0 {
+		r.delay = time.Second
+	} else {
+		r.delay = min(r.delay*2, 30*time.Second)
+	}
+	r.next = now.Add(r.delay)
+	message := err.Error()
+	changed := message != r.lastError
+	r.lastError = message
+	return changed
+}
+
+func (r *retryBackoff) reset() {
+	*r = retryBackoff{}
 }
 
 func (t *titleUpdater) set(title string) {

@@ -49,7 +49,7 @@ func TestSpotifyReaderCachesMetadata(t *testing.T) {
 	metadataReads := 0
 	reader := spotifyReader{read: func(progress, album bool, cachedID string, cachedPID int) ([]byte, error) {
 		if state == "" || state == "stopped" {
-			return []byte(fmt.Sprintf(`{"PlayerState":%q}`, state)), nil
+			return fmt.Appendf(nil, `{"PlayerState":%q}`, state), nil
 		}
 		refreshed := id == "" || id != cachedID || pid != cachedPID
 		if refreshed {
@@ -61,11 +61,11 @@ func TestSpotifyReaderCachesMetadata(t *testing.T) {
 			if album {
 				albumName = "Album"
 			}
-			return []byte(fmt.Sprintf(`{"PlayerState":%q,"TrackID":%q,"ProcessID":%d,"MetadataRefreshed":true,"Track":"Song","Artist":"Artist","Album":%q,"Duration":%d,"Position":%d}`,
-				state, id, pid, albumName, duration, position)), nil
+			return fmt.Appendf(nil, `{"PlayerState":%q,"TrackID":%q,"ProcessID":%d,"MetadataRefreshed":true,"Track":"Song","Artist":"Artist","Album":%q,"Duration":%d,"Position":%d}`,
+				state, id, pid, albumName, duration, position), nil
 		}
-		return []byte(fmt.Sprintf(`{"PlayerState":%q,"TrackID":%q,"ProcessID":%d,"Position":%d}`,
-			state, id, pid, position)), nil
+		return fmt.Appendf(nil, `{"PlayerState":%q,"TrackID":%q,"ProcessID":%d,"Position":%d}`,
+			state, id, pid, position), nil
 	}}
 
 	check := func(progress, album bool, expectedReads int) *Data {
