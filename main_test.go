@@ -1,6 +1,7 @@
 package main
 
 import (
+	"reflect"
 	"spotify-tray/spotifydata"
 	"testing"
 )
@@ -26,5 +27,20 @@ func TestPlaybackMenuTitle(t *testing.T) {
 				t.Errorf("playbackMenuTitle(%+v) = (%q, %v), want (%q, %v)", test.data, title, visible, test.title, test.visible)
 			}
 		})
+	}
+}
+
+func TestTitleUpdaterSkipsUnchangedTitles(t *testing.T) {
+	var updates []string
+	updater := titleUpdater{
+		current: "Loading...",
+		update:  func(title string) { updates = append(updates, title) },
+	}
+	for _, title := range []string{"Loading...", "Song", "Song", "Unable to read Spotify", "Unable to read Spotify", "Song"} {
+		updater.set(title)
+	}
+	want := []string{"Song", "Unable to read Spotify", "Song"}
+	if !reflect.DeepEqual(updates, want) {
+		t.Fatalf("title updates = %q, want %q", updates, want)
 	}
 }

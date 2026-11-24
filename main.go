@@ -20,6 +20,7 @@ func main() {
 
 func onReady() {
 	systray.SetTitle("Loading...")
+	trayTitle := titleUpdater{current: "Loading...", update: systray.SetTitle}
 	mPlayback := systray.AddMenuItem("Play", "Toggle Spotify playback")
 	mPlayback.Hide()
 	mLyrics := systray.AddMenuItem("Lyrics", "Search for lyrics online")
@@ -42,13 +43,21 @@ func onReady() {
 		if err != nil {
 			fmt.Printf("error %s\n", err)
 			currentSpotifyData = &spotifydata.Data{}
-			systray.SetTitle("Unable to read Spotify")
-			mPlayback.Hide()
+			trayTitle.set("Unable to read Spotify")
+			if playbackVisible {
+				mPlayback.Hide()
+			}
 			playbackVisible = false
 			return
 		}
 		currentSpotifyData = data
-		updateTray(currentSpotifyData)
+		trayTitle.set(currentSpotifyData.Format(
+			storage.GetShowProgress(),
+			storage.GetShowAlbum(),
+			storage.GetArtistFirst(),
+			storage.GetMoreSpace(),
+			storage.GetAlternateSeparator(),
+		))
 		title, visible := playbackMenuTitle(currentSpotifyData)
 		if visible {
 			if title != playbackTitle {
@@ -161,12 +170,14 @@ func playbackMenuTitle(data *spotifydata.Data) (string, bool) {
 	}
 }
 
-func updateTray(d *spotifydata.Data) {
-	systray.SetTitle(d.Format(
-		storage.GetShowProgress(),
-		storage.GetShowAlbum(),
-		storage.GetArtistFirst(),
-		storage.GetMoreSpace(),
-		storage.GetAlternateSeparator(),
-	))
+type titleUpdater struct {
+	current string
+	update  func(string)
+}
+
+func (t *titleUpdater) set(title string) {
+	if title != t.current {
+		t.update(title)
+		t.current = title
+	}
 }
